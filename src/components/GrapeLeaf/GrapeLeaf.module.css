@@ -1,0 +1,162 @@
+.leaf {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gp-space-2);
+  padding: var(--gp-space-2) var(--gp-space-4) var(--gp-space-2) var(--gp-space-5);
+  background: linear-gradient(
+    135deg,
+    var(--gp-leaf-green) 0%,
+    var(--gp-leaf-light) 50%,
+    var(--gp-leaf-green) 100%
+  );
+  clip-path: polygon(
+    0% 50%,
+    3% 35%,
+    10% 20%,
+    20% 10%,
+    35% 3%,
+    50% 0%,
+    65% 3%,
+    80% 10%,
+    90% 20%,
+    97% 35%,
+    100% 50%,
+    97% 65%,
+    90% 80%,
+    80% 90%,
+    65% 97%,
+    50% 100%,
+    35% 97%,
+    20% 90%,
+    10% 80%,
+    3% 65%
+  );
+  color: white;
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: filter var(--gp-duration-normal) var(--gp-ease-natural);
+  box-shadow: var(--gp-shadow-leaf);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaf:hover {
+  filter: brightness(1.1) saturate(1.1);
+}
+
+/* Leaf vein decoration */
+.leaf::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%);
+}
+
+/* Tendril connector */
+.tendril {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 2px;
+  height: 16px;
+  background: linear-gradient(
+    to top,
+    var(--gp-leaf-green),
+    var(--gp-vine-green),
+    transparent
+  );
+  transform: translateX(-50%);
+}
+
+.tendril::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: var(--gp-leaf-light);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+}
+
+/* Chat badge */
+.chatBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  background: var(--gp-grape-purple);
+  border-radius: 9px;
+  border: 2px solid var(--gp-parchment);
+  z-index: 2;
+}
+
+/* Expanded leaf (tooltip) */
+.leafExpanded {
+  position: relative;
+  display: inline-block;
+  padding: var(--gp-space-3) var(--gp-space-4);
+  background: linear-gradient(
+    135deg,
+    var(--gp-leaf-green) 0%,
+    var(--gp-leaf-light) 100%
+  );
+  border-radius: var(--gp-radius-md);
+  color: white;
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-sm);
+  line-height: var(--gp-line-height-normal);
+  max-width: 280px;
+  cursor: pointer;
+  box-shadow: var(--gp-shadow-leaf);
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.leafExpanded::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 2px;
+  height: 8px;
+  background: var(--gp-leaf-green);
+  transform: translateX(-50%);
+}
+
+.leafContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.leafExpanded .leafContent {
+  -webkit-line-clamp: unset;
+}
+
+/* Wrapper for positioning */
+.leafWrapper {
+  position: relative;
+  display: inline-flex;
+}

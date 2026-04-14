@@ -1,0 +1,158 @@
+@import './theme.css';
+
+/* ============================================
+   GrapePaper Global Styles
+   ============================================ */
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--gp-font-serif);
+  font-size: var(--gp-font-size-base);
+  line-height: var(--gp-line-height-normal);
+  color: var(--gp-text-primary);
+  background-color: var(--gp-bg-primary);
+  /* Subtle parchment texture via layered gradients */
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 119, 90, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 119, 90, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 119, 90, 0.05) 0%, transparent 50%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 100px,
+      rgba(139, 119, 90, 0.015) 100px,
+      rgba(139, 119, 90, 0.015) 101px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 100px,
+      rgba(139, 119, 90, 0.015) 100px,
+      rgba(139, 119, 90, 0.015) 101px
+    );
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ---- Selection ---- */
+::selection {
+  background-color: rgba(107, 47, 160, 0.25);
+  color: var(--gp-text-primary);
+}
+
+::-moz-selection {
+  background-color: rgba(107, 47, 160, 0.25);
+  color: var(--gp-text-primary);
+}
+
+/* ---- Scrollbar (Vine-themed) ---- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gp-parchment-dark);
+  border-left: 1px solid rgba(45, 80, 22, 0.15);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--gp-leaf-green) 0%,
+    var(--gp-vine-green) 50%,
+    var(--gp-bark-brown) 100%
+  );
+  border-radius: 5px;
+  border: 2px solid var(--gp-parchment-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--gp-leaf-light) 0%,
+    var(--gp-leaf-green) 50%,
+    var(--gp-vine-green) 100%
+  );
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gp-leaf-green) var(--gp-parchment-dark);
+}
+
+/* ---- Typography Base ---- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--gp-font-serif);
+  font-weight: 600;
+  line-height: var(--gp-line-height-tight);
+  color: var(--gp-text-primary);
+}
+
+p {
+  margin-bottom: var(--gp-space-4);
+}
+
+a {
+  color: var(--gp-grape-purple);
+  text-decoration: none;
+  transition: color var(--gp-duration-fast) var(--gp-ease-natural);
+}
+
+a:hover {
+  color: var(--gp-grape-light);
+  text-decoration: underline;
+}
+
+button {
+  font-family: var(--gp-font-sans);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: inherit;
+}
+
+input, textarea {
+  font-family: var(--gp-font-serif);
+  font-size: var(--gp-font-size-base);
+}
+
+/* ---- Focus Styles ---- */
+:focus-visible {
+  outline: 2px solid var(--gp-grape-purple);
+  outline-offset: 2px;
+}
+
+/* ---- Utility Classes ---- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

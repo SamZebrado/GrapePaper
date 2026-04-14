@@ -1,0 +1,91 @@
+.bubble {
+  position: relative;
+  max-width: 360px;
+  padding: var(--gp-space-3) var(--gp-space-4);
+  border-radius: 18px 18px 18px 4px;
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-sm);
+  line-height: var(--gp-line-height-normal);
+  word-wrap: break-word;
+  transition: all var(--gp-duration-slow) var(--gp-ease-natural);
+}
+
+.bubbleUser {
+  background: linear-gradient(
+    135deg,
+    rgba(107, 47, 160, 0.12) 0%,
+    rgba(155, 89, 182, 0.08) 100%
+  );
+  border: 1px solid rgba(107, 47, 160, 0.2);
+  color: var(--gp-text-primary);
+  border-radius: 18px 18px 4px 18px;
+  align-self: flex-end;
+}
+
+.bubbleAssistant {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 80, 22, 0.08) 0%,
+    rgba(74, 124, 41, 0.05) 100%
+  );
+  border: 1px solid rgba(45, 80, 22, 0.15);
+  color: var(--gp-text-primary);
+  border-radius: 18px 18px 18px 4px;
+  align-self: flex-start;
+}
+
+/* Role label */
+.roleLabel {
+  display: block;
+  font-size: var(--gp-font-size-xs);
+  font-weight: 600;
+  margin-bottom: var(--gp-space-1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleLabelUser {
+  color: var(--gp-grape-purple);
+}
+
+.roleLabelAssistant {
+  color: var(--gp-leaf-green);
+}
+
+/* Tiny dot state for very old messages */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--gp-duration-normal) var(--gp-ease-natural);
+}
+
+.dotUser {
+  background: var(--gp-grape-purple);
+  box-shadow: 0 0 6px rgba(107, 47, 160, 0.3);
+}
+
+.dotAssistant {
+  background: var(--gp-leaf-green);
+  box-shadow: 0 0 6px rgba(45, 80, 22, 0.3);
+}
+
+.dot:hover {
+  transform: scale(1.5);
+}
+
+/* Message row */
+.messageRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gp-space-2);
+}
+
+/* Timestamp */
+.timestamp {
+  font-size: 10px;
+  color: var(--gp-text-muted);
+  margin-top: var(--gp-space-1);
+}

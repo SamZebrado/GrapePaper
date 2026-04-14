@@ -1,0 +1,198 @@
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--gp-chat-panel-width);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    var(--gp-parchment) 0%,
+    var(--gp-parchment-dark) 100%
+  );
+  border-left: 3px solid var(--gp-vine-green);
+  box-shadow: -4px 0 20px rgba(60, 50, 40, 0.1);
+  z-index: var(--gp-z-chat-panel);
+  overflow: hidden;
+}
+
+/* Vine decoration on left border */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 6px;
+  height: 100%;
+  background: repeating-linear-gradient(
+    180deg,
+    var(--gp-vine-green) 0px,
+    var(--gp-leaf-green) 20px,
+    var(--gp-vine-green) 40px,
+    var(--gp-bark-light) 60px,
+    var(--gp-vine-green) 80px
+  );
+  opacity: 0.3;
+}
+
+/* Small leaf decorations */
+.panel::after {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: -8px;
+  width: 12px;
+  height: 12px;
+  background: var(--gp-leaf-green);
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(45deg);
+  opacity: 0.4;
+  box-shadow:
+    120px 80px 0 0 var(--gp-leaf-light),
+    60px 200px 0 -2px var(--gp-leaf-green),
+    180px 350px 0 -1px var(--gp-leaf-light),
+    40px 500px 0 -2px var(--gp-leaf-green);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gp-space-4) var(--gp-space-5);
+  border-bottom: 1px solid rgba(45, 80, 22, 0.15);
+  background: rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.headerTitle {
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-vine-green);
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-2);
+}
+
+.headerIcon {
+  font-size: 16px;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--gp-text-muted);
+  border-radius: 50%;
+  transition: all var(--gp-duration-fast) var(--gp-ease-natural);
+}
+
+.closeBtn:hover {
+  color: var(--gp-text-primary);
+  background: rgba(60, 50, 40, 0.08);
+}
+
+/* Messages area */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--gp-space-4) var(--gp-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gp-space-3);
+  position: relative;
+  z-index: 1;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--gp-text-muted);
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-sm);
+  text-align: center;
+  gap: var(--gp-space-3);
+}
+
+.emptyIcon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+/* Input area */
+.inputArea {
+  display: flex;
+  gap: var(--gp-space-2);
+  padding: var(--gp-space-4) var(--gp-space-5);
+  border-top: 1px solid rgba(45, 80, 22, 0.15);
+  background: rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.input {
+  flex: 1;
+  padding: var(--gp-space-3) var(--gp-space-4);
+  font-family: var(--gp-font-serif);
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-primary);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(138, 138, 122, 0.3);
+  border-radius: var(--gp-radius-lg);
+  outline: none;
+  transition: border-color var(--gp-duration-fast) var(--gp-ease-natural);
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+}
+
+.input:focus {
+  border-color: var(--gp-leaf-green);
+  box-shadow: 0 0 0 3px rgba(74, 124, 41, 0.1);
+}
+
+.input::placeholder {
+  color: var(--gp-text-muted);
+  font-style: italic;
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--gp-vine-green), var(--gp-leaf-green));
+  color: white;
+  border-radius: var(--gp-radius-lg);
+  font-size: 18px;
+  transition: all var(--gp-duration-fast) var(--gp-ease-natural);
+  box-shadow: 0 2px 8px rgba(45, 80, 22, 0.25);
+  flex-shrink: 0;
+}
+
+.sendBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.35);
+}
+
+.sendBtn:active {
+  transform: translateY(0);
+}
+
+/* Overlay backdrop */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 50, 40, 0.15);
+  z-index: calc(var(--gp-z-chat-panel) - 1);
+}

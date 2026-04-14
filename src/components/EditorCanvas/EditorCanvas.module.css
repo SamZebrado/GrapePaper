@@ -1,0 +1,89 @@
+.canvas {
+  margin-left: var(--gp-sidebar-width);
+  width: calc(100% - var(--gp-sidebar-width));
+  padding: var(--gp-space-12) var(--gp-space-8) var(--gp-space-16);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+
+.inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gp-space-2);
+}
+
+/* Document title display */
+.docTitle {
+  font-family: var(--gp-font-serif);
+  font-size: var(--gp-font-size-2xl);
+  font-weight: 700;
+  color: var(--gp-text-primary);
+  text-align: center;
+  margin-bottom: var(--gp-space-8);
+  padding-bottom: var(--gp-space-6);
+  border-bottom: 2px solid rgba(45, 80, 22, 0.15);
+  position: relative;
+}
+
+.docTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: var(--gp-leaf-green);
+}
+
+/* Add paragraph area */
+.addArea {
+  display: flex;
+  justify-content: center;
+  padding: var(--gp-space-8) 0;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-2);
+  padding: var(--gp-space-3) var(--gp-space-6);
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  color: var(--gp-leaf-green);
+  background: rgba(74, 124, 41, 0.06);
+  border: 2px dashed rgba(74, 124, 41, 0.25);
+  border-radius: var(--gp-radius-xl);
+  transition: all var(--gp-duration-normal) var(--gp-ease-natural);
+}
+
+.addBtn:hover {
+  color: var(--gp-vine-green);
+  background: rgba(74, 124, 41, 0.1);
+  border-color: var(--gp-leaf-green);
+  transform: translateY(-1px);
+}
+
+.addBtnIcon {
+  font-size: 18px;
+  font-weight: 300;
+}
+
+/* Paragraph section wrapper */
+.paragraphSection {
+  position: relative;
+}
+
+/* Annotations row below slab */
+.annotationsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gp-space-3);
+  margin-top: var(--gp-space-2);
+  padding-left: var(--gp-space-8);
+}

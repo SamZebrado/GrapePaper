@@ -1,0 +1,50 @@
+.connector {
+  display: flex;
+  justify-content: center;
+  padding: var(--gp-space-2) 0;
+  position: relative;
+  z-index: var(--gp-z-vine);
+}
+
+.vineSvg {
+  width: 100%;
+  max-width: 200px;
+  height: 60px;
+  overflow: visible;
+}
+
+/* Main vine path animation */
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(0.5deg);
+  }
+  75% {
+    transform: rotate(-0.5deg);
+  }
+}
+
+.vinePath {
+  animation: sway 6s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+/* Small leaf decorations */
+.leafDeco {
+  animation: sway 6s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.leafDeco:nth-child(2) {
+  animation-delay: -1.5s;
+}
+
+.leafDeco:nth-child(3) {
+  animation-delay: -3s;
+}
+
+.leafDeco:nth-child(4) {
+  animation-delay: -4.5s;
+}
