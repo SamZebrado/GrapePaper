@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useUI } from '../../contexts/UIContext';
+import { useTranslation } from 'react-i18next';
 import { 
   serializeDocumentToMarkdown, 
   serializeDocumentToJson, 
@@ -22,6 +23,13 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
   const loadSampleDocument = useDocumentStore((s) => s.loadSampleDocument);
   const clearLocalDraft = useDocumentStore((s) => s.clearLocalDraft);
   const { toast, confirm } = useUI();
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = useCallback(async (lng: 'en' | 'zh-CN') => {
+    await i18n.changeLanguage(lng);
+    localStorage.setItem('gp-language', lng);
+    globalThis.document.documentElement.lang = lng;
+  }, [i18n]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,29 +124,29 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
 
   const handleResetToSample = useCallback(async () => {
     const confirmed = await confirm({
-      title: 'Reset to Sample Document',
-      message: 'Are you sure you want to reset to the sample document? All current changes will be lost.',
-      confirmText: 'Reset',
-      cancelText: 'Cancel'
+      title: t('confirm.resetTitle'),
+      message: t('confirm.resetMessage'),
+      confirmText: t('common.confirm'),
+      cancelText: t('common.cancel')
     });
     if (confirmed) {
       loadSampleDocument();
-      toast('Document reset to sample successfully', 'success');
+      toast(t('toast.resetDone'), 'success');
     }
-  }, [loadSampleDocument, confirm, toast]);
+  }, [loadSampleDocument, confirm, toast, t]);
 
   const handleClearLocalDraft = useCallback(async () => {
     const confirmed = await confirm({
-      title: 'Clear Local Draft',
-      message: 'Are you sure you want to clear your local draft? All current changes will be lost.',
-      confirmText: 'Clear',
-      cancelText: 'Cancel'
+      title: t('confirm.clearTitle'),
+      message: t('confirm.clearMessage'),
+      confirmText: t('common.confirm'),
+      cancelText: t('common.cancel')
     });
     if (confirmed) {
       clearLocalDraft();
-      toast('Local draft cleared successfully', 'success');
+      toast(t('toast.clearDone'), 'success');
     }
-  }, [clearLocalDraft, confirm, toast]);
+  }, [clearLocalDraft, confirm, toast, t]);
 
   return (
     <motion.aside
@@ -157,18 +165,19 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
 
       {/* Document Title */}
       <div className={styles.docTitleSection}>
-        <div className={styles.docTitleLabel}>Document Title</div>
+        <div className={styles.docTitleLabel}>{t('sidebar.documentTitle')}</div>
         <input
+          data-testid="doc-title-input"
           className={styles.docTitleInput}
           value={document.title}
           onChange={handleTitleChange}
-          placeholder="Untitled Document"
+          placeholder={t('sidebar.untitledDocument')}
         />
       </div>
 
       {/* Paragraph List */}
       <div className={styles.paragraphList}>
-        <div className={styles.paragraphListLabel}>Paragraphs</div>
+        <div className={styles.paragraphListLabel}>{t('sidebar.paragraphs')}</div>
         {document.paragraphs.map((para) => (
           <motion.div
             key={para.id}
@@ -202,7 +211,7 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
       <div className={styles.statusIndicator}>
         <div className={styles.statusText}>
           <span className={styles.statusDot}></span>
-          <span>Autosaved</span>
+          <span>{t('sidebar.autosaved')}</span>
         </div>
         <div className={styles.statusTimestamp}>
           {new Date(document.updatedAt).toLocaleTimeString()}
@@ -213,50 +222,72 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
       <div className={styles.actions}>
         <div className={styles.actionGroup}>
           <button
+            data-testid="import-json-btn"
             className={styles.actionBtn}
             onClick={handleImportJson}
             title="Import JSON file"
           >
-            Import .json
+            {t('sidebar.importJson')}
           </button>
           <button
+            data-testid="import-md-btn"
             className={styles.actionBtn}
             onClick={handleImportMarkdown}
             title="Import Markdown file"
           >
-            Import .md
+            {t('sidebar.importMd')}
+          </button>
+        </div>
+        <div className={styles.actionGroup}>
+          <button
+            data-testid="export-json-btn"
+            className={styles.actionBtn}
+            onClick={handleExportJson}
+            title="Export as JSON"
+          >
+            {t('sidebar.exportJson')}
+          </button>
+          <button
+            data-testid="export-md-btn"
+            className={styles.actionBtnPrimary}
+            onClick={handleExportMarkdown}
+            title="Export as Markdown"
+          >
+            {t('sidebar.exportMd')}
+          </button>
+        </div>
+        <div className={styles.actionGroup}>
+          <button
+            data-testid="reset-sample-btn"
+            className={styles.actionBtnSecondary}
+            onClick={handleResetToSample}
+            title="Reset to sample document"
+          >
+            {t('sidebar.resetSample')}
+          </button>
+          <button
+            data-testid="clear-draft-btn"
+            className={styles.actionBtnSecondary}
+            onClick={handleClearLocalDraft}
+            title="Clear local draft"
+          >
+            {t('sidebar.clearDraft')}
           </button>
         </div>
         <div className={styles.actionGroup}>
           <button
             className={styles.actionBtn}
-            onClick={handleExportJson}
-            title="Export as JSON"
+            onClick={() => changeLanguage('en')}
+            title="English"
           >
-            Export .json
+            EN
           </button>
           <button
-            className={styles.actionBtnPrimary}
-            onClick={handleExportMarkdown}
-            title="Export as Markdown"
+            className={styles.actionBtn}
+            onClick={() => changeLanguage('zh-CN')}
+            title="中文"
           >
-            Export .md
-          </button>
-        </div>
-        <div className={styles.actionGroup}>
-          <button
-            className={styles.actionBtnSecondary}
-            onClick={handleResetToSample}
-            title="Reset to sample document"
-          >
-            Reset to Sample
-          </button>
-          <button
-            className={styles.actionBtnSecondary}
-            onClick={handleClearLocalDraft}
-            title="Clear local draft"
-          >
-            Clear Draft
+            中文
           </button>
         </div>
       </div>

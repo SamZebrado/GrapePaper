@@ -105,7 +105,7 @@ describe('ChatPanel', () => {
       <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
     );
     
-    const input = screen.getByPlaceholderText('Ask about this annotation...') as HTMLTextAreaElement;
+    const input = screen.getByTestId('chat-input') as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'Test message' } });
     
     const sendButton = screen.getByTitle('Send message');
@@ -119,7 +119,7 @@ describe('ChatPanel', () => {
       <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
     );
     
-    const input = screen.getByPlaceholderText('Ask about this annotation...') as HTMLTextAreaElement;
+    const input = screen.getByTestId('chat-input') as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'Test message' } });
     
     fireEvent.keyDown(input, { key: 'Enter', shiftKey: false });
@@ -132,7 +132,7 @@ describe('ChatPanel', () => {
       <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
     );
     
-    const input = screen.getByPlaceholderText('Ask about this annotation...') as HTMLTextAreaElement;
+    const input = screen.getByTestId('chat-input') as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'Test message' } });
     
     fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
@@ -156,7 +156,7 @@ describe('ChatPanel', () => {
       <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
     );
     
-    const input = screen.getByPlaceholderText('Ask about this annotation...') as HTMLTextAreaElement;
+    const input = screen.getByTestId('chat-input') as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: 'Test message' } });
     
     const sendButton = screen.getByTitle('Send message');

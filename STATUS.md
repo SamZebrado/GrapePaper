@@ -1,7 +1,7 @@
 # STATUS
 
 ## Current workstream
-- GrapePaper v0.1.19 — Demo Release Prep
+- GrapePaper v0.1.20 — Demo Release Prep
 
 ## Current truth (2026-04-18)
 
@@ -38,18 +38,17 @@
 
 ### 交付物
 - ✅ 已创建：demo/screenshots 文件夹
-- ✅ 已创建：USABILITY_CHECK.md（已更新到 v0.1.19）
-- ✅ 已创建：DEMO_SCRIPT.md（已更新到 v0.1.19）
+- ✅ 已创建：USABILITY_CHECK.md（已更新到 v0.1.20）
+- ✅ 已创建：DEMO_SCRIPT.md（已更新到 v0.1.20）
 - ✅ 已创建：RUN_LOG.md（验证记录）
 - ✅ 已更新：DELIVERY_NOTE.md
 - ✅ 已创建：测试文件（documentStore.test.ts + documentIO.test.ts + GrapeLeaf.test.tsx + ChatPanel.test.tsx + Sidebar.test.tsx + userFlow.test.tsx）
 - ✅ 完整源码包可复现（包含 tsconfig.json 等所有构建必需文件）
-- ⏳ 待完成：demo/screenshots 中的截图
+- ✅ 已完成：demo/screenshots 中的截图
 
 ## Active risks / blockers
 - No blocking issue for local startup or build
 - Major features still unimplemented: real AI API, PDF rendering, Zotero integration, docx/tex import
-- **Demo 截图需要在有 GUI 环境下进行**
 
 ## Current source-of-truth files
 - STATUS.md
@@ -60,10 +59,9 @@
 - RUN_LOG.md
 
 ## Recommended next step
-1. 产出真实 demo 证据（截图）
-2. 统一文档中的版本号和测试数量
-3. 深化 documentIO / storage 校验
-4. 添加 autosave/restore 状态提示和 annotation 编辑反馈
+1. 统一文档中的版本号和测试数量
+2. 深化 documentIO / storage 校验
+3. 添加 autosave/restore 状态提示和 annotation 编辑反馈
 
 ## Latest run archive
 - RUN_LOG.md（当前版本验证记录）

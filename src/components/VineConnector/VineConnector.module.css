@@ -4,13 +4,18 @@
   padding: var(--gp-space-2) 0;
   position: relative;
   z-index: var(--gp-z-vine);
+  max-width: 200px;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
 .vineSvg {
   width: 100%;
   max-width: 200px;
   height: 60px;
-  overflow: visible;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 /* Main vine path animation */

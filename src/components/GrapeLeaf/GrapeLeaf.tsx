@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useUI } from '../../contexts/UIContext';
+import { useTranslation } from 'react-i18next';
 import type { Annotation } from '../../types';
 import styles from './GrapeLeaf.module.css';
 
@@ -16,6 +17,7 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
   const [editContent, setEditContent] = useState(annotation.content);
   const { editAnnotation, deleteAnnotation } = useDocumentStore();
   const { toast } = useUI();
+  const { t } = useTranslation();
   
   const totalMessages = annotation.chatThreads.reduce(
     (sum, t) => sum + t.messages.length,
@@ -37,7 +39,7 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
   const handleSave = () => {
     editAnnotation(annotation.id, editContent);
     setIsEditing(false);
-    toast('Annotation saved successfully', 'success');
+    toast(t('toast.annotationSaved'), 'success');
   };
 
   const handleCancel = () => {
@@ -47,7 +49,7 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
 
   const handleDelete = () => {
     deleteAnnotation(annotation.id);
-    toast('Annotation deleted successfully', 'success');
+    toast(t('toast.annotationDeleted'), 'success');
   };
 
   return (
@@ -93,6 +95,7 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
             {isEditing ? (
               <div className={styles.leafContent}>
                 <textarea
+                  data-testid="annotation-edit-textarea"
                   className={styles.editTextarea}
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
@@ -101,42 +104,46 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
                 />
                 <div className={styles.editActions}>
                   <motion.button 
+                    data-testid="annotation-save-btn"
                     className={styles.saveButton} 
                     onClick={handleSave}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Save
+                    {t('common.save')}
                   </motion.button>
                   <motion.button 
+                    data-testid="annotation-cancel-edit-btn"
                     className={styles.cancelButton} 
                     onClick={handleCancel}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </motion.button>
                 </div>
               </div>
             ) : (
               <>
-                <div className={styles.leafContent} onClick={onOpenChat}>{annotation.content}</div>
+                <div data-testid="annotation-leaf-content" className={styles.leafContent} onClick={onOpenChat}>{annotation.content}</div>
                 <div className={styles.leafActions}>
                   <motion.button 
+                    data-testid="annotation-edit-btn"
                     className={styles.editButton} 
                     onClick={handleEdit}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Edit
+                    {t('common.edit')}
                   </motion.button>
                   <motion.button 
+                    data-testid="annotation-delete-btn"
                     className={styles.deleteButton} 
                     onClick={handleDelete}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Delete
+                    {t('common.delete')}
                   </motion.button>
                 </div>
               </>

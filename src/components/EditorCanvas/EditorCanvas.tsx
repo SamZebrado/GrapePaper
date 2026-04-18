@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDocumentStore } from '../../stores/documentStore';
+import { useTranslation } from 'react-i18next';
 import StoneSlab from '../StoneSlab/StoneSlab';
 import GrapeLeaf from '../GrapeLeaf/GrapeLeaf';
 import VineConnector from '../VineConnector/VineConnector';
@@ -17,6 +18,7 @@ export default function EditorCanvas({ onOpenAnnotation }: EditorCanvasProps) {
   const addAnnotation = useDocumentStore((s) => s.addAnnotation);
   const addParagraph = useDocumentStore((s) => s.addParagraph);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
   
   // State for annotation input
   const [annotationInput, setAnnotationInput] = useState<string>('');
@@ -92,25 +94,28 @@ export default function EditorCanvas({ onOpenAnnotation }: EditorCanvasProps) {
               >
                 <div className={styles.annotationInputWrapper}>
                   <textarea
+                    data-testid="annotation-input"
                     className={styles.annotationInput}
-                    placeholder="Enter your annotation..."
+                    placeholder={t('editor.enterAnnotation')}
                     value={annotationInput}
                     onChange={(e) => setAnnotationInput(e.target.value)}
                     autoFocus
                   />
                   <div className={styles.annotationInputActions}>
                     <button 
+                      data-testid="annotation-cancel-btn"
                       className={styles.annotationCancelBtn}
                       onClick={handleAnnotationCancel}
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                     <button 
+                      data-testid="annotation-submit-btn"
                       className={styles.annotationSubmitBtn}
                       onClick={handleAnnotationSubmit}
                       disabled={!annotationInput.trim()}
                     >
-                      Add Annotation
+                      {t('editor.addAnnotationSubmit')}
                     </button>
                   </div>
                 </div>
@@ -141,7 +146,7 @@ export default function EditorCanvas({ onOpenAnnotation }: EditorCanvasProps) {
             whileTap={{ scale: 0.98 }}
           >
             <span className={styles.addBtnIcon}>+</span>
-            Add New Stone Slab
+            {t('editor.addNewStoneSlab')}
           </motion.button>
         </div>
       </div>

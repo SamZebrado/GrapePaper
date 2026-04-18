@@ -4,6 +4,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { useCallback, useEffect } from 'react';
 import type { Paragraph, Citation } from '../../types';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import DewdropCitation from '../DewdropCitation/DewdropCitation';
 import styles from './StoneSlab.module.css';
 
@@ -20,11 +21,13 @@ export default function StoneSlab({
   onDelete,
   onAddAnnotation,
 }: StoneSlabProps) {
+  const { t } = useTranslation();
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Begin writing on this stone slab...',
+        placeholder: t('editor.beginWriting'),
       }),
     ],
     content: paragraph.content,
@@ -69,7 +72,7 @@ export default function StoneSlab({
       {/* Mini toolbar */}
       <div className={styles.toolbar}>
         <button className={styles.toolbarBtn} onClick={handleAddAnnotation}>
-          + Annotation
+          {t('editor.addAnnotation')}
         </button>
         {editor && (
           <>

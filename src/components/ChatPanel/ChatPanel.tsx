@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ChatThread } from '../../types';
+import { useTranslation } from 'react-i18next';
 import ChatBubble from '../ChatBubble/ChatBubble';
 import styles from './ChatPanel.module.css';
 
@@ -14,6 +15,7 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
@@ -51,6 +53,7 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
             onClick={onClose}
           />
           <motion.div
+            data-testid="chat-panel"
             className={styles.panel}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -61,10 +64,10 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
             <div className={styles.header}>
               <div className={styles.headerTitle}>
                 <span className={styles.headerIcon}>AI Chat</span>
-                <span>Discussion Thread</span>
-                <span className={styles.mockBadge} title="AI responses are simulated placeholders">mock</span>
+                <span>{t('chat.title')}</span>
+                <span className={styles.mockBadge} title="AI responses are simulated placeholders">{t('common.mock')}</span>
               </div>
-              <button className={styles.closeBtn} onClick={onClose}>
+              <button data-testid="chat-close-btn" className={styles.closeBtn} onClick={onClose}>
                 x
               </button>
             </div>
@@ -74,7 +77,7 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
               {thread.messages.length === 0 ? (
                 <div className={styles.emptyState}>
                   <span className={styles.emptyIcon}>Q</span>
-                  <span>Ask a question about this annotation</span>
+                  <span>{t('chat.empty')}</span>
                 </div>
               ) : (
                 thread.messages.map((msg, idx) => (
@@ -91,15 +94,17 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
             {/* Input */}
             <div className={styles.inputArea}>
               <textarea
+                data-testid="chat-input"
                 ref={inputRef}
                 className={styles.input}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about this annotation..."
+                placeholder={t('chat.inputPlaceholder')}
                 rows={1}
               />
               <button
+                data-testid="chat-send-btn"
                 className={styles.sendBtn}
                 onClick={handleSend}
                 disabled={!input.trim()}

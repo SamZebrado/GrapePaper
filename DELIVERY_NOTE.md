@@ -1,16 +1,14 @@
-# DELIVERY NOTE — GrapePaper v0.1.19
+# DELIVERY NOTE — GrapePaper v0.1.20
 
 ## 1. What Changed This Round
 
 ### 清理和优化 (P1)
-- ✅ 清理了源码包 — 移除了旧版本的 zip 文件
 - ✅ 优化了测试环境 — 添加了 scrollTo mock 以减少 JSDOM 警告
-- ✅ 统一了文档版本 — 更新了所有文档的版本号到 v0.1.19
+- ✅ 统一了文档版本 — 更新了所有文档的版本号到 v0.1.20
 
 ### 功能完善
-- **源码包清理**：移除了旧版本的 zip 文件，使交付物更干净
 - **测试环境优化**：添加了 scrollTo mock，减少了测试日志中的噪音
-- **文档一致性**：统一了所有文档的版本号到 v0.1.19
+- **文档一致性**：统一了所有文档的版本号到 v0.1.20
 
 ## 2. How to Install and Run
 
@@ -66,10 +64,10 @@ npm run dev
 
 ## 6. Files Changed
 
-- `package.json` — version (0.1.18 → 0.1.19)
+- `package.json` — version (0.1.19 → 0.1.20)
 - `src/test/setup.ts` — added scrollTo mock to reduce JSDOM warnings
-- `STATUS.md` — updated version (0.1.18 → 0.1.19)
-- `USABILITY_CHECK.md` — updated version (0.1.18 → 0.1.19)
-- `DEMO_SCRIPT.md` — updated version (0.1.18 → 0.1.19)
-- `DELIVERY_NOTE.md` — complete rewrite for v0.1.19
+- `STATUS.md` — updated version (0.1.19 → 0.1.20)
+- `USABILITY_CHECK.md` — updated version (0.1.19 → 0.1.20)
+- `DEMO_SCRIPT.md` — updated version (0.1.19 → 0.1.20)
+- `DELIVERY_NOTE.md` — complete rewrite for v0.1.20
 - All config files included in source zip: tsconfig.json, tsconfig.app.json, tsconfig.node.json, vite.config.ts, vitest.config.ts, index.html, .gitignore, eslint.config.js

@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build artifacts
+*.zip
+
+# Internal documentation
+PLAN.md
+PROJECT_LOG.md
+RUN_LOG.md
+CHANGED_FILES.md
+docs/agent_runs/
+docs/SOLO_CODE_PROMPT.md
+docs/SOLO_CODE_PROMPTS.md
+docs/SUBMISSION_POST.md

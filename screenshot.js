@@ -1,71 +1,62 @@
 import { chromium } from 'playwright';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5175';
+const OUT_DIR = path.resolve('demo/screenshots');
+
+async function ensureDir() {
+  await fs.mkdir(OUT_DIR, { recursive: true });
+}
+
+async function saveShot(page, name) {
+  await page.screenshot({
+    path: path.join(OUT_DIR, name),
+    fullPage: false,
+    animations: 'disabled',
+  });
+}
 
 (async () => {
-  // 启动浏览器
   const browser = await chromium.launch({
-    headless: false,
-    slowMo: 100
+    headless: true,
   });
-  
-  const context = await browser.newContext();
+
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 800 },
+    deviceScaleFactor: 1,
+  });
+
   const page = await context.newPage();
-  
+
   try {
-    // 导航到GrapePaper
-    await page.goto('http://localhost:5174/');
+    await ensureDir();
+
+    await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle');
-    
-    console.log('1. 获取总览截图...');
-    // 截图 1: 总览
-    await page.screenshot({
-      path: 'demo/screenshots/01-overview.png',
-      fullPage: true
-    });
-    
-    console.log('2. 获取标题编辑截图...');
-    // 截图 2: 标题编辑
-    await page.click('input[placeholder="Untitled Document"]');
-    await page.keyboard.press('Meta+A');
-    await page.keyboard.type('GrapePaper Demo Draft');
-    await page.screenshot({
-      path: 'demo/screenshots/02-title-edit.png',
-      fullPage: true
-    });
-    
-    console.log('3. 获取段落编辑截图...');
-    // 截图 3: 段落编辑
-    await page.evaluate(() => {
-      const editor = document.querySelector('.tiptap-content');
-      if (editor) {
-        editor.focus();
-      }
-    });
-    await page.keyboard.type('This is a demo paragraph for the Phase 1 prototype. ');
-    await page.screenshot({
-      path: 'demo/screenshots/03-paragraph-edit.png',
-      fullPage: true
-    });
-    
-    console.log('4. 获取导出动作截图...');
-    // 截图 4: 导出动作
-    await page.evaluate(() => {
-      const buttons = document.querySelectorAll('button');
-      const exportBtn = Array.from(buttons).find(btn => btn.textContent.includes('Export .md'));
-      if (exportBtn) {
-        exportBtn.click();
-      }
-    });
-    await page.screenshot({
-      path: 'demo/screenshots/04-export-actions.png',
-      fullPage: true
-    });
-    
-    console.log('所有截图已完成！');
-    
-  } catch (error) {
-    console.error('Error taking screenshots:', error);
+    await page.waitForFunction(() => document.fonts?.ready);
+    await page.waitForTimeout(2000);
+
+    // 01 overview
+    console.log('Taking screenshot 01-overview.png');
+    await saveShot(page, '01-overview.png');
+    console.log('Screenshot 01-overview.png taken successfully!');
+
+    // 06 chat panel
+    console.log('Taking screenshot 06-chat-panel.png');
+    await saveShot(page, '06-chat-panel.png');
+    console.log('Screenshot 06-chat-panel.png taken successfully!');
+
+    // 07 import-export
+    console.log('Taking screenshot 07-import-export.png');
+    await saveShot(page, '07-import-export.png');
+    console.log('Screenshot 07-import-export.png taken successfully!');
+
+    console.log('All screenshots completed successfully!');
+  } catch (err) {
+    console.error('Error taking screenshots:', err);
+    process.exitCode = 1;
   } finally {
-    // 关闭浏览器
     await browser.close();
   }
 })();

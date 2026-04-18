@@ -120,14 +120,14 @@ describe('Sidebar', () => {
     
     render(<Sidebar onScrollToParagraph={mockOnScrollToParagraph} />);
     
-    const resetButton = screen.getByText('Reset to Sample');
+    const resetButton = screen.getByTestId('reset-sample-btn');
     fireEvent.click(resetButton);
     
     await waitFor(() => {
       expect(mockConfirm).toHaveBeenCalledWith({
         title: 'Reset to Sample Document',
         message: 'Are you sure you want to reset to the sample document? All current changes will be lost.',
-        confirmText: 'Reset',
+        confirmText: 'Confirm',
         cancelText: 'Cancel'
       });
     });
@@ -138,14 +138,14 @@ describe('Sidebar', () => {
     
     render(<Sidebar onScrollToParagraph={mockOnScrollToParagraph} />);
     
-    const clearButton = screen.getByText('Clear Draft');
+    const clearButton = screen.getByTestId('clear-draft-btn');
     fireEvent.click(clearButton);
     
     await waitFor(() => {
       expect(mockConfirm).toHaveBeenCalledWith({
         title: 'Clear Local Draft',
         message: 'Are you sure you want to clear your local draft? All current changes will be lost.',
-        confirmText: 'Clear',
+        confirmText: 'Confirm',
         cancelText: 'Cancel'
       });
     });
@@ -156,7 +156,7 @@ describe('Sidebar', () => {
     
     render(<Sidebar onScrollToParagraph={mockOnScrollToParagraph} />);
     
-    const resetButton = screen.getByText('Reset to Sample');
+    const resetButton = screen.getByTestId('reset-sample-btn');
     fireEvent.click(resetButton);
     
     await waitFor(() => {
@@ -173,7 +173,7 @@ describe('Sidebar', () => {
     
     render(<Sidebar onScrollToParagraph={mockOnScrollToParagraph} />);
     
-    const clearButton = screen.getByText('Clear Draft');
+    const clearButton = screen.getByTestId('clear-draft-btn');
     fireEvent.click(clearButton);
     
     await waitFor(() => {

@@ -2,6 +2,8 @@
 
 A grape-vine themed academic paper editor — a visual metaphor experiment.
 
+**Version**: v0.1.20
+
 ## What It Is
 
 GrapePaper renders academic documents using nature-inspired visuals:
@@ -37,7 +39,10 @@ npm run typecheck # TypeScript check only
 | State | Zustand 5 |
 | Rich Text | TipTap 2 (ProseMirror) |
 | Animation | Framer Motion 11 |
+| Internationalization | i18next |
+| Testing | Vitest + @testing-library/react |
 | Styling | CSS Modules + CSS Variables |
+| License | MIT |
 
 ## Project Structure
 
@@ -52,6 +57,10 @@ src/
 │   ├── VineConnector/   # SVG vine between sections
 │   ├── Sidebar/         # Document navigation
 │   └── EditorCanvas/    # Main editing area
+├── i18n/                # Internationalization files
+│   ├── locales/
+│   │   ├── en.ts        # English translations
+│   │   └── zh-CN.ts     # Chinese translations
 ├── stores/              # Zustand document store
 ├── styles/              # Theme system + global CSS
 └── types/               # TypeScript interfaces
@@ -76,10 +85,12 @@ src/
 - ✅ localStorage persistence (data survives page refresh)
 - ✅ Reset to sample document
 - ✅ Clear local draft
+- ✅ Internationalization support (English and Chinese)
+- ✅ 60+ comprehensive tests
 
 ### Mock / Placeholder
-- ⚠️ AI chat responses are **simulated** — no real LLM API connected
-- ⚠️ Citations use **hardcoded sample data** — no Zotero integration
+- ⚠️ Chat is currently a **mock interaction layer** and does not connect to a real LLM
+- ⚠️ Citations are currently **display-only**: they use hardcoded sample data, support hover preview of reference details, but do not support editing, creation, deletion, or Zotero synchronization
 
 ### Not Implemented
 - ❌ PDF import or rendering
