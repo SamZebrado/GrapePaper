@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDocumentStore } from '../../stores/documentStore';
 import StoneSlab from '../StoneSlab/StoneSlab';
@@ -17,16 +17,31 @@ export default function EditorCanvas({ onOpenAnnotation }: EditorCanvasProps) {
   const addAnnotation = useDocumentStore((s) => s.addAnnotation);
   const addParagraph = useDocumentStore((s) => s.addParagraph);
   const canvasRef = useRef<HTMLDivElement>(null);
+  
+  // State for annotation input
+  const [annotationInput, setAnnotationInput] = useState<string>('');
+  const [activeParagraphId, setActiveParagraphId] = useState<string | null>(null);
 
   const handleAddAnnotation = useCallback(
     (paragraphId: string) => {
-      const content = prompt('Enter annotation:');
-      if (content?.trim()) {
-        addAnnotation(paragraphId, content.trim());
-      }
+      setActiveParagraphId(paragraphId);
+      setAnnotationInput('');
     },
-    [addAnnotation]
+    []
   );
+
+  const handleAnnotationSubmit = useCallback(() => {
+    if (activeParagraphId && annotationInput.trim()) {
+      addAnnotation(activeParagraphId, annotationInput.trim());
+      setActiveParagraphId(null);
+      setAnnotationInput('');
+    }
+  }, [activeParagraphId, annotationInput, addAnnotation]);
+
+  const handleAnnotationCancel = useCallback(() => {
+    setActiveParagraphId(null);
+    setAnnotationInput('');
+  }, []);
 
   const handleAddParagraph = useCallback(() => {
     const maxOrder = document.paragraphs.reduce((m, p) => Math.max(m, p.order), 0);
@@ -66,6 +81,41 @@ export default function EditorCanvas({ onOpenAnnotation }: EditorCanvasProps) {
               onDelete={deleteParagraph}
               onAddAnnotation={handleAddAnnotation}
             />
+
+            {/* Annotation Input */}
+            {activeParagraphId === paragraph.id && (
+              <motion.div
+                className={styles.annotationInputContainer}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <div className={styles.annotationInputWrapper}>
+                  <textarea
+                    className={styles.annotationInput}
+                    placeholder="Enter your annotation..."
+                    value={annotationInput}
+                    onChange={(e) => setAnnotationInput(e.target.value)}
+                    autoFocus
+                  />
+                  <div className={styles.annotationInputActions}>
+                    <button 
+                      className={styles.annotationCancelBtn}
+                      onClick={handleAnnotationCancel}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className={styles.annotationSubmitBtn}
+                      onClick={handleAnnotationSubmit}
+                      disabled={!annotationInput.trim()}
+                    >
+                      Add Annotation
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Grape Leaf Annotations */}
             {paragraph.annotations.length > 0 && (

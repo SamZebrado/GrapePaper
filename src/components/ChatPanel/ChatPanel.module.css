@@ -81,6 +81,20 @@
   font-size: 16px;
 }
 
+.mockBadge {
+  font-family: var(--gp-font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gp-warning);
+  background: rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: var(--gp-space-2);
+}
+
 .closeBtn {
   width: 28px;
   height: 28px;

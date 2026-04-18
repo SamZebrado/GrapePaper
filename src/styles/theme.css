@@ -111,6 +111,8 @@
   --gp-z-sidebar: 100;
   --gp-z-chat-panel: 200;
   --gp-z-tooltip: 300;
+  --gp-z-toast: 400;
+  --gp-z-modal: 500;
 
   /* ---- Layout ---- */
   --gp-sidebar-width: 280px;

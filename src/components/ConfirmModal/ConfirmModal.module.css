@@ -1,0 +1,76 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--gp-z-modal);
+}
+
+.modal {
+  background: var(--gp-parchment);
+  border: 1px solid var(--gp-vine-green);
+  border-radius: var(--gp-radius-lg);
+  padding: var(--gp-space-6);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modalTitle {
+  font-family: var(--gp-font-serif);
+  font-size: var(--gp-font-size-lg);
+  font-weight: 600;
+  color: var(--gp-text-primary);
+  margin-bottom: var(--gp-space-4);
+}
+
+.modalMessage {
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text-secondary);
+  margin-bottom: var(--gp-space-6);
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--gp-space-3);
+  justify-content: flex-end;
+}
+
+.modalButton {
+  padding: var(--gp-space-2) var(--gp-space-4);
+  font-family: var(--gp-font-sans);
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  border-radius: var(--gp-radius-md);
+  cursor: pointer;
+  transition: all var(--gp-duration-fast) var(--gp-ease-natural);
+  border: 1px solid transparent;
+}
+
+.modalButtonCancel {
+  color: var(--gp-text-secondary);
+  background: transparent;
+  border-color: rgba(138, 138, 122, 0.2);
+}
+
+.modalButtonCancel:hover {
+  background: rgba(138, 138, 122, 0.1);
+}
+
+.modalButtonConfirm {
+  color: white;
+  background: var(--gp-leaf-green);
+  border-color: var(--gp-vine-green);
+}
+
+.modalButtonConfirm:hover {
+  background: var(--gp-vine-green);
+  transform: translateY(-1px);
+}

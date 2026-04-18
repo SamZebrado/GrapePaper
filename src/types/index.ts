@@ -8,7 +8,7 @@ export interface Paragraph {
 
 export interface Annotation {
   id: string;
-  paragraphId: string;
+  paragraphId?: string;
   content: string;
   createdAt: number;
   chatThreads: ChatThread[];
@@ -16,25 +16,33 @@ export interface Annotation {
 
 export interface ChatThread {
   id: string;
-  messages: ChatMessage[];
+  title?: string;
+  createdAt?: number;
+  messages: Message[];
 }
 
-export interface ChatMessage {
+export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   createdAt: number;
 }
 
+// 保持向后兼容
+export type ChatMessage = Message;
+
 export interface Citation {
   id: string;
-  key: string;
-  authors: string;
-  title: string;
-  year: string;
-  abstract: string;
+  key?: string;
+  sourceId?: string;
+  quote?: string;
+  authors?: string;
+  title?: string;
+  year?: string;
+  abstract?: string;
   doi?: string;
   zoteroKey?: string;
+  createdAt?: number;
 }
 
 export interface Document {

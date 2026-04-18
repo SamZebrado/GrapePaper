@@ -1,9 +1,18 @@
 import { create } from 'zustand';
 import type { Document, Paragraph, Annotation, ChatMessage, Citation } from '../types';
+import { validateAndNormalizeDocument } from '../utils/documentIO';
 
 let _idCounter = 100;
 function uid(): string {
   return `id_${Date.now()}_${++_idCounter}`;
+}
+
+const STORAGE_KEY = 'grapepaper_document';
+const STORAGE_VERSION = 1;
+
+interface StoredData {
+  version: number;
+  document: Document;
 }
 
 interface DocumentStore {
@@ -19,6 +28,8 @@ interface DocumentStore {
   deleteParagraph: (paragraphId: string) => void;
 
   addAnnotation: (paragraphId: string, content: string) => void;
+  editAnnotation: (annotationId: string, content: string) => void;
+  deleteAnnotation: (annotationId: string) => void;
   setActiveAnnotation: (annotationId: string | null) => void;
   setActiveChatThread: (threadId: string | null) => void;
 
@@ -28,6 +39,8 @@ interface DocumentStore {
   addCitation: (paragraphId: string, citation: Omit<Citation, 'id'>) => void;
 
   loadSampleDocument: () => void;
+  clearLocalDraft: () => void;
+  loadFromStorage: () => void;
 }
 
 const sampleCitations: Citation[] = [
@@ -187,17 +200,60 @@ const sampleDocument: Document = {
   ],
 };
 
+function saveToStorage(document: Document) {
+  try {
+    const storedData: StoredData = {
+      version: STORAGE_VERSION,
+      document,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storedData));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+}
+
+function loadFromStorage(): Document | null {
+  try {
+    const storedDataStr = localStorage.getItem(STORAGE_KEY);
+    if (!storedDataStr) return null;
+    
+    const storedData: StoredData = JSON.parse(storedDataStr);
+    
+    // Handle version mismatch
+    if (storedData.version !== STORAGE_VERSION) {
+      console.warn(`Storage version mismatch: expected ${STORAGE_VERSION}, got ${storedData.version}. Using sample document.`);
+      // Optionally add migration logic here in the future
+      return null;
+    }
+    
+    // Use validateAndNormalizeDocument for robust validation
+    const normalizedDocument = validateAndNormalizeDocument(storedData.document);
+    return normalizedDocument;
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    return null;
+  }
+}
+
+// Initialize with data from storage or sample
+const initialDocument = loadFromStorage() || sampleDocument;
+
 export const useDocumentStore = create<DocumentStore>((set, get) => ({
-  document: sampleDocument,
+  document: initialDocument,
   activeAnnotationId: null,
   activeChatThreadId: null,
 
-  setDocument: (doc) => set({ document: doc }),
+  setDocument: (doc) => {
+    set({ document: doc });
+    saveToStorage(doc);
+  },
 
   setTitle: (title) =>
-    set((state) => ({
-      document: { ...state.document, title, updatedAt: Date.now() },
-    })),
+    set((state) => {
+      const updatedDocument = { ...state.document, title, updatedAt: Date.now() };
+      saveToStorage(updatedDocument);
+      return { document: updatedDocument };
+    }),
 
   addParagraph: (afterOrder) => {
     const { document } = get();
@@ -210,34 +266,38 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
       annotations: [],
       citations: [],
     };
-    set((state) => ({
-      document: {
-        ...state.document,
-        paragraphs: [...state.document.paragraphs, newParagraph],
-        updatedAt: Date.now(),
-      },
-    }));
+    const updatedDocument = {
+      ...document,
+      paragraphs: [...document.paragraphs, newParagraph],
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
   },
 
   updateParagraphContent: (paragraphId, content) =>
-    set((state) => ({
-      document: {
+    set((state) => {
+      const updatedDocument = {
         ...state.document,
         paragraphs: state.document.paragraphs.map((p) =>
           p.id === paragraphId ? { ...p, content } : p
         ),
         updatedAt: Date.now(),
-      },
-    })),
+      };
+      saveToStorage(updatedDocument);
+      return { document: updatedDocument };
+    }),
 
   deleteParagraph: (paragraphId) =>
-    set((state) => ({
-      document: {
+    set((state) => {
+      const updatedDocument = {
         ...state.document,
         paragraphs: state.document.paragraphs.filter((p) => p.id !== paragraphId),
         updatedAt: Date.now(),
-      },
-    })),
+      };
+      saveToStorage(updatedDocument);
+      return { document: updatedDocument };
+    }),
 
   addAnnotation: (paragraphId, content) => {
     const annotation: Annotation = {
@@ -247,15 +307,46 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
       createdAt: Date.now(),
       chatThreads: [],
     };
-    set((state) => ({
-      document: {
-        ...state.document,
-        paragraphs: state.document.paragraphs.map((p) =>
-          p.id === paragraphId ? { ...p, annotations: [...p.annotations, annotation] } : p
+    const { document } = get();
+    const updatedDocument = {
+      ...document,
+      paragraphs: document.paragraphs.map((p) =>
+        p.id === paragraphId ? { ...p, annotations: [...p.annotations, annotation] } : p
+      ),
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
+  },
+
+  editAnnotation: (annotationId, content) => {
+    const { document } = get();
+    const updatedDocument = {
+      ...document,
+      paragraphs: document.paragraphs.map((p) => ({
+        ...p,
+        annotations: p.annotations.map((a) =>
+          a.id === annotationId ? { ...a, content } : a
         ),
-        updatedAt: Date.now(),
-      },
-    }));
+      })),
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
+  },
+
+  deleteAnnotation: (annotationId) => {
+    const { document } = get();
+    const updatedDocument = {
+      ...document,
+      paragraphs: document.paragraphs.map((p) => ({
+        ...p,
+        annotations: p.annotations.filter((a) => a.id !== annotationId),
+      })),
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
   },
 
   setActiveAnnotation: (annotationId) => set({ activeAnnotationId: annotationId }),
@@ -263,20 +354,21 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
 
   createChatThread: (annotationId) => {
     const threadId = uid();
-    set((state) => ({
-      document: {
-        ...state.document,
-        paragraphs: state.document.paragraphs.map((p) => ({
-          ...p,
-          annotations: p.annotations.map((a) =>
-            a.id === annotationId
-              ? { ...a, chatThreads: [...a.chatThreads, { id: threadId, messages: [] }] }
-              : a
-          ),
-        })),
-        updatedAt: Date.now(),
-      },
-    }));
+    const { document } = get();
+    const updatedDocument = {
+      ...document,
+      paragraphs: document.paragraphs.map((p) => ({
+        ...p,
+        annotations: p.annotations.map((a) =>
+          a.id === annotationId
+            ? { ...a, chatThreads: [...a.chatThreads, { id: threadId, messages: [] }] }
+            : a
+        ),
+      })),
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
     return threadId;
   },
 
@@ -287,35 +379,59 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
       content,
       createdAt: Date.now(),
     };
-    set((state) => ({
-      document: {
-        ...state.document,
-        paragraphs: state.document.paragraphs.map((p) => ({
-          ...p,
-          annotations: p.annotations.map((a) => ({
-            ...a,
-            chatThreads: a.chatThreads.map((t) =>
-              t.id === threadId ? { ...t, messages: [...t.messages, message] } : t
-            ),
-          })),
+    const { document } = get();
+    const updatedDocument = {
+      ...document,
+      paragraphs: document.paragraphs.map((p) => ({
+        ...p,
+        annotations: p.annotations.map((a) => ({
+          ...a,
+          chatThreads: a.chatThreads.map((t) =>
+            t.id === threadId ? { ...t, messages: [...t.messages, message] } : t
+          ),
         })),
-        updatedAt: Date.now(),
-      },
-    }));
+      })),
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
   },
 
   addCitation: (paragraphId, citation) => {
     const newCitation: Citation = { ...citation, id: uid() };
-    set((state) => ({
-      document: {
-        ...state.document,
-        paragraphs: state.document.paragraphs.map((p) =>
-          p.id === paragraphId ? { ...p, citations: [...p.citations, newCitation] } : p
-        ),
-        updatedAt: Date.now(),
-      },
-    }));
+    const { document } = get();
+    const updatedDocument = {
+      ...document,
+      paragraphs: document.paragraphs.map((p) =>
+        p.id === paragraphId ? { ...p, citations: [...p.citations, newCitation] } : p
+      ),
+      updatedAt: Date.now(),
+    };
+    set({ document: updatedDocument });
+    saveToStorage(updatedDocument);
   },
 
-  loadSampleDocument: () => set({ document: sampleDocument }),
+  loadSampleDocument: () => {
+    set({ document: sampleDocument });
+    saveToStorage(sampleDocument);
+  },
+
+  clearLocalDraft: () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      set({ document: sampleDocument });
+    } catch (error) {
+      console.error('Error clearing local draft:', error);
+    }
+  },
+
+  loadFromStorage: () => {
+    const storedDocument = loadFromStorage();
+    if (storedDocument) {
+      set({ document: storedDocument });
+    }
+  },
 }));
+
+// Load from storage on initialization
+useDocumentStore.getState().loadFromStorage();

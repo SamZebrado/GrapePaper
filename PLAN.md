@@ -1,3 +1,5 @@
+> **Note**: This plan is historical and partially superseded by STATUS.md and DELIVERY_NOTE.md. It reflects the original development intent, not the current verified state.
+
 # PLAN
 
 ## Goal

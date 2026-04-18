@@ -1,73 +1,94 @@
-# React + TypeScript + Vite
+# GrapePaper 🍇
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A grape-vine themed academic paper editor — a visual metaphor experiment.
 
-Currently, two official plugins are available:
+## What It Is
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+GrapePaper renders academic documents using nature-inspired visuals:
+- **Stone Slabs** — paragraphs appear as textured stone tablets
+- **Grape Leaves** — annotations grow as leaf-shaped elements
+- **Dewdrops** — citations shimmer as translucent water drops with hover preview
+- **Vine Connectors** — SVG bezier curves link sections together
+- **Chat Bubbles** — AI discussion threads emerge from annotations (currently mock)
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Requires Node.js >= 18 LTS
+npm install
+npm run dev
+# Open http://localhost:5173/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build    # tsc + vite build → dist/
+npm run preview # serve the build locally
+npm run typecheck # TypeScript check only
 ```
+
+## Tech Stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | React 18 + TypeScript 5.6 |
+| Build | Vite 6 (esbuild) |
+| State | Zustand 5 |
+| Rich Text | TipTap 2 (ProseMirror) |
+| Animation | Framer Motion 11 |
+| Styling | CSS Modules + CSS Variables |
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── StoneSlab/       # Paragraph editor (TipTap)
+│   ├── GrapeLeaf/       # Annotation display
+│   ├── DewdropCitation/ # Citation with hover preview
+│   ├── ChatBubble/      # Message bubble (age-based shrinking)
+│   ├── ChatPanel/       # Slide-in discussion panel
+│   ├── VineConnector/   # SVG vine between sections
+│   ├── Sidebar/         # Document navigation
+│   └── EditorCanvas/    # Main editing area
+├── stores/              # Zustand document store
+├── styles/              # Theme system + global CSS
+└── types/               # TypeScript interfaces
+```
+
+## Current State (Honest)
+
+### Working
+- ✅ Stone slab paragraph rendering with stone texture CSS
+- ✅ TipTap rich text editing inside slabs (bold, italic)
+- ✅ Grape leaf annotations (click to expand, click again to open chat)
+- ✅ Dewdrop citation hover preview (authors, title, abstract, DOI link)
+- ✅ Vine connector SVGs between paragraphs
+- ✅ Chat bubble display with age-based shrinking animation
+- ✅ Sidebar with document title editing and paragraph navigation
+- ✅ Export to Markdown (.md file download)
+- ✅ Export to JSON (.json file download)
+- ✅ Import from JSON (.json file)
+- ✅ Import from Markdown (.md file)
+- ✅ Add/delete paragraphs
+- ✅ Add annotations via inline input dialog
+- ✅ localStorage persistence (data survives page refresh)
+- ✅ Reset to sample document
+- ✅ Clear local draft
+
+### Mock / Placeholder
+- ⚠️ AI chat responses are **simulated** — no real LLM API connected
+- ⚠️ Citations use **hardcoded sample data** — no Zotero integration
+
+### Not Implemented
+- ❌ PDF import or rendering
+- ❌ Zotero integration
+- ❌ Real AI/LLM API connection
+- ❌ File import (DOCX, LaTeX)
+- ❌ Dark theme
+- ❌ Mobile responsive layout
+
+## Design Philosophy
+
+The core idea is that document editing doesn't have to look like a blank white page. By using organic visual metaphors — stone, leaves, vines, dewdrops — the writing experience becomes less intimidating, particularly for users who struggle with the traditional academic writing interface.

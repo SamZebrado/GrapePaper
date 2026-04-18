@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDocumentStore } from '../../stores/documentStore';
+import { useUI } from '../../contexts/UIContext';
 import type { Annotation } from '../../types';
 import styles from './GrapeLeaf.module.css';
 
@@ -10,6 +12,11 @@ interface GrapeLeafProps {
 
 export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
   const [expanded, setExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(annotation.content);
+  const { editAnnotation, deleteAnnotation } = useDocumentStore();
+  const { toast } = useUI();
+  
   const totalMessages = annotation.chatThreads.reduce(
     (sum, t) => sum + t.messages.length,
     0
@@ -21,6 +28,26 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
     } else {
       setExpanded(true);
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    editAnnotation(annotation.id, editContent);
+    setIsEditing(false);
+    toast('Annotation saved successfully', 'success');
+  };
+
+  const handleCancel = () => {
+    setEditContent(annotation.content);
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    deleteAnnotation(annotation.id);
+    toast('Annotation deleted successfully', 'success');
   };
 
   return (
@@ -56,7 +83,6 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
           <motion.div
             key="expanded"
             className={styles.leafExpanded}
-            onClick={handleClick}
             initial={{ opacity: 0, y: -5, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -5, scale: 0.9 }}
@@ -64,7 +90,57 @@ export default function GrapeLeaf({ annotation, onOpenChat }: GrapeLeafProps) {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            <div className={styles.leafContent}>{annotation.content}</div>
+            {isEditing ? (
+              <div className={styles.leafContent}>
+                <textarea
+                  className={styles.editTextarea}
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  autoFocus
+                  placeholder="Edit your annotation..."
+                />
+                <div className={styles.editActions}>
+                  <motion.button 
+                    className={styles.saveButton} 
+                    onClick={handleSave}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Save
+                  </motion.button>
+                  <motion.button 
+                    className={styles.cancelButton} 
+                    onClick={handleCancel}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Cancel
+                  </motion.button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className={styles.leafContent} onClick={onOpenChat}>{annotation.content}</div>
+                <div className={styles.leafActions}>
+                  <motion.button 
+                    className={styles.editButton} 
+                    onClick={handleEdit}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Edit
+                  </motion.button>
+                  <motion.button 
+                    className={styles.deleteButton} 
+                    onClick={handleDelete}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Delete
+                  </motion.button>
+                </div>
+              </>
+            )}
           </motion.div>
         ) : (
           <motion.div

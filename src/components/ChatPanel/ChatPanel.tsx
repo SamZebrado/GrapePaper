@@ -16,7 +16,9 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [thread?.messages.length]);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function ChatPanel({ thread, onClose, onSendMessage }: ChatPanelP
               <div className={styles.headerTitle}>
                 <span className={styles.headerIcon}>AI Chat</span>
                 <span>Discussion Thread</span>
+                <span className={styles.mockBadge} title="AI responses are simulated placeholders">mock</span>
               </div>
               <button className={styles.closeBtn} onClick={onClose}>
                 x
