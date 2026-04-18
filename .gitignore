@@ -26,6 +26,9 @@ dist-ssr
 # Build artifacts
 *.zip
 
+# Vite build artifacts
+.vite/
+
 # Internal documentation
 PLAN.md
 PROJECT_LOG.md
@@ -34,4 +37,3 @@ CHANGED_FILES.md
 docs/agent_runs/
 docs/SOLO_CODE_PROMPT.md
 docs/SOLO_CODE_PROMPTS.md
-docs/SUBMISSION_POST.md
