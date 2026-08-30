@@ -82,52 +82,42 @@ const sampleCitations: Citation[] = [
   },
 ];
 
-const sampleDocument: Document = {
-  id: 'doc-sample-1',
-  title: 'Large Language Models in Academic Writing: Opportunities and Challenges',
-  createdAt: Date.now() - 86400000,
-  updatedAt: Date.now(),
+const DEMO_TIMESTAMP = Date.UTC(2026, 7, 30, 8, 0, 0);
+
+export const sampleDocument: Document = {
+  id: 'grapepaper-demo-v2',
+  title: 'Cultivating Trustworthy AI-Assisted Scholarship',
+  createdAt: DEMO_TIMESTAMP - 86400000,
+  updatedAt: DEMO_TIMESTAMP,
   paragraphs: [
     {
-      id: 'para-1',
+      id: 'demo-para-1',
       content:
-        'The emergence of large language models (LLMs) has fundamentally transformed the landscape of academic writing and scholarly communication. These sophisticated AI systems, trained on vast corpora of scientific literature, now demonstrate remarkable capabilities in text generation, summarization, and argumentation. As noted by Zhao et al. [1], the rapid evolution from early neural language models to contemporary systems like GPT-4 [3] represents a paradigm shift in how researchers approach the writing process. The implications extend beyond mere text production to encompass literature synthesis, hypothesis generation, and even peer review assistance.',
+        'Academic writing is beginning to treat large language models as instruments rather than authors. Used carefully, these systems can help researchers compare structures, test explanations, and notice gaps in an argument. Yet fluent prose is not evidence: Zhao et al. [1] show that capability grows alongside new verification demands, while the GPT-4 report [3] makes model limitations part of the scholarly record. A trustworthy workflow therefore keeps source judgment and final claims with the researcher.',
       order: 1,
       annotations: [
         {
-          id: 'annot-1',
-          paragraphId: 'para-1',
-          content: 'This paragraph sets up the broad context. Consider adding specific statistics about LLM adoption rates in academia to strengthen the opening.',
-          createdAt: Date.now() - 3600000,
+          id: 'demo-annot-1',
+          paragraphId: 'demo-para-1',
+          content: 'Clarify the distinction between writing assistance and scholarly authorship; the opening should remain precise rather than promotional.',
+          createdAt: DEMO_TIMESTAMP - 3600000,
           chatThreads: [
             {
-              id: 'thread-1',
+              id: 'demo-thread-1',
+              title: 'Authorship boundary',
+              createdAt: DEMO_TIMESTAMP - 3500000,
               messages: [
                 {
-                  id: 'msg-1',
+                  id: 'demo-msg-1',
                   role: 'user',
-                  content: 'What are the main concerns about using LLMs in academic writing?',
-                  createdAt: Date.now() - 3500000,
+                  content: 'What claim should the opening make about authorship?',
+                  createdAt: DEMO_TIMESTAMP - 3400000,
                 },
                 {
-                  id: 'msg-2',
+                  id: 'demo-msg-2',
                   role: 'assistant',
-                  content:
-                    'The primary concerns include: (1) Academic integrity — blurring the line between original thought and AI-generated content; (2) Accuracy — LLMs can produce plausible-sounding but factually incorrect statements ("hallucinations"); (3) Bias — models may perpetuate biases present in training data; (4) Over-reliance — researchers may become dependent on AI tools, potentially diminishing critical thinking skills.',
-                  createdAt: Date.now() - 3400000,
-                },
-                {
-                  id: 'msg-3',
-                  role: 'user',
-                  content: 'How do current evaluation frameworks address these concerns?',
-                  createdAt: Date.now() - 3300000,
-                },
-                {
-                  id: 'msg-4',
-                  role: 'assistant',
-                  content:
-                    'Current evaluation frameworks, as surveyed by Chang et al. [2], attempt to address these through multi-dimensional assessment including factual accuracy benchmarks, bias detection metrics, and human evaluation protocols. However, no single framework comprehensively captures all dimensions of concern in academic writing contexts.',
-                  createdAt: Date.now() - 3200000,
+                  content: 'Mock suggestion: frame the model as an instrument whose output still requires human source checking, interpretation, and accountability.',
+                  createdAt: DEMO_TIMESTAMP - 3300000,
                 },
               ],
             },
@@ -137,65 +127,28 @@ const sampleDocument: Document = {
       citations: [sampleCitations[0], sampleCitations[2]],
     },
     {
-      id: 'para-2',
+      id: 'demo-para-2',
       content:
-        'From a methodological perspective, the integration of LLMs into academic workflows raises profound questions about authorship, originality, and epistemic authority. While these tools can significantly enhance productivity — assisting with drafting, language polishing, and structural organization — they simultaneously challenge traditional notions of intellectual contribution. Research by Eloundou et al. [4] suggests that the labor market implications of LLM adoption are substantial, with knowledge work being particularly susceptible to automation. In the academic sphere, this translates to a need for clear guidelines on appropriate AI use, transparent disclosure practices, and robust plagiarism detection systems capable of distinguishing between AI-assisted and AI-generated content.',
+        'Evaluation must follow the same principle. A useful review combines factual checks, source tracing, bias inspection, and human assessment instead of relying on one score. Chang et al. [2] describe why multi-dimensional evaluation is necessary when a system can be persuasive and still be wrong. In practice, this means recording what the tool contributed, checking every citation against its source, and preserving an auditable path from evidence to conclusion.',
       order: 2,
       annotations: [
         {
-          id: 'annot-2',
-          paragraphId: 'para-2',
-          content:
-            'The transition from methodological concerns to practical implications is smooth. The citation of labor market research effectively broadens the argument beyond academia.',
-          createdAt: Date.now() - 7200000,
+          id: 'demo-annot-2',
+          paragraphId: 'demo-para-2',
+          content: 'Tighten this sentence so the four checks read as one reproducible method.',
+          createdAt: DEMO_TIMESTAMP - 2400000,
           chatThreads: [],
         },
       ],
-      citations: [sampleCitations[3]],
+      citations: [sampleCitations[1]],
     },
     {
-      id: 'para-3',
+      id: 'demo-para-3',
       content:
-        'Despite these challenges, the potential benefits of thoughtfully integrating LLMs into academic writing are considerable. For non-native English speakers, these tools can democratize access to international scholarly discourse by reducing language barriers. For early-career researchers, AI-assisted writing support can accelerate the development of academic communication skills. Furthermore, advanced applications such as automated literature review, intelligent citation suggestion, and real-time argument coherence checking represent transformative opportunities for the research enterprise. The key lies in developing frameworks that leverage AI capabilities while preserving the essential human elements of scholarly inquiry: critical thinking, creativity, and intellectual rigor.',
+        'The goal is not frictionless automation, but a calmer and more legible research process. Transparent boundaries let writers benefit from assistance without obscuring responsibility. When provenance, uncertainty, and revision remain visible, AI-supported writing can strengthen scholarly care rather than replace it.',
       order: 3,
       annotations: [],
       citations: [],
-    },
-    {
-      id: 'para-4',
-      content:
-        'Looking forward, the academic community must engage in a nuanced dialogue about the role of AI in knowledge production. This requires collaboration between computer scientists, ethicists, domain experts, and policymakers to establish norms that balance innovation with integrity. Evaluation methodologies [2] will play a crucial role in this process, providing the empirical foundation for evidence-based policy decisions. Ultimately, the goal should not be to resist technological change but to channel it in ways that enhance rather than diminish the quality and credibility of academic scholarship.',
-      order: 4,
-      annotations: [
-        {
-          id: 'annot-3',
-          paragraphId: 'para-4',
-          content:
-            'Strong concluding paragraph. The call for interdisciplinary collaboration is well-placed. Consider adding a brief mention of specific institutional policies that have been proposed or implemented.',
-          createdAt: Date.now() - 1800000,
-          chatThreads: [
-            {
-              id: 'thread-2',
-              messages: [
-                {
-                  id: 'msg-5',
-                  role: 'user',
-                  content: 'Can you suggest some specific institutional policies?',
-                  createdAt: Date.now() - 1700000,
-                },
-                {
-                  id: 'msg-6',
-                  role: 'assistant',
-                  content:
-                    'Several institutions have introduced notable policies: Nature and Science journals now require AI disclosure statements; UNESCO released guidelines on AI ethics in education; many universities have updated their academic integrity policies to specifically address generative AI. The CRediT taxonomy has also been extended to include AI-related contributor roles.',
-                  createdAt: Date.now() - 1600000,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-      citations: [sampleCitations[1]],
     },
   ],
 };
@@ -336,17 +289,24 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
   },
 
   deleteAnnotation: (annotationId) => {
-    const { document } = get();
-    const updatedDocument = {
-      ...document,
-      paragraphs: document.paragraphs.map((p) => ({
-        ...p,
-        annotations: p.annotations.filter((a) => a.id !== annotationId),
-      })),
-      updatedAt: Date.now(),
-    };
-    set({ document: updatedDocument });
-    saveToStorage(updatedDocument);
+    set((state) => {
+      const updatedDocument = {
+        ...state.document,
+        paragraphs: state.document.paragraphs.map((p) => ({
+          ...p,
+          annotations: p.annotations.filter((a) => a.id !== annotationId),
+        })),
+        updatedAt: Date.now(),
+      };
+      saveToStorage(updatedDocument);
+      const deletingActiveAnnotation = state.activeAnnotationId === annotationId;
+      return {
+        document: updatedDocument,
+        ...(deletingActiveAnnotation
+          ? { activeAnnotationId: null, activeChatThreadId: null }
+          : {}),
+      };
+    });
   },
 
   setActiveAnnotation: (annotationId) => set({ activeAnnotationId: annotationId }),

@@ -1,19 +1,58 @@
 .canvas {
   margin-left: var(--gp-sidebar-width);
   width: calc(100% - var(--gp-sidebar-width));
-  padding: var(--gp-space-12) var(--gp-space-8) var(--gp-space-16);
+  padding: var(--gp-space-10) 48px var(--gp-space-16);
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
   position: relative;
 }
 
+.canvas[data-chat-open='true'] {
+  width: calc(100% - var(--gp-sidebar-width) - var(--gp-chat-panel-width));
+  margin-right: var(--gp-chat-panel-width);
+}
+
 .inner {
-  max-width: 900px;
+  max-width: var(--gp-v2-slab-max);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--gp-space-2);
+}
+
+@media (max-width: 900px) {
+  .canvas,
+  .canvas[data-chat-open='true'] {
+    margin-left: var(--gp-sidebar-width);
+    margin-right: 0;
+    width: calc(100% - var(--gp-sidebar-width));
+    padding: var(--gp-v2-space-8) 32px var(--gp-space-12);
+  }
+
+  .docTitle {
+    margin-bottom: var(--gp-space-6);
+  }
+
+  .annotationsRow,
+  .annotationInputContainer {
+    padding-left: 0;
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addBtn,
+  .annotationCancelBtn,
+  .annotationSubmitBtn {
+    transition-duration: 0ms;
+  }
+
+  .addBtn:hover,
+  .annotationSubmitBtn:hover {
+    transform: none;
+  }
 }
 
 /* Document title display */

@@ -96,13 +96,32 @@
 
 .modalButtonConfirm {
   color: white;
-  background: var(--gp-leaf-green);
-  border-color: var(--gp-vine-green);
+  background: var(--gp-v2-danger, var(--gp-danger));
+  border-color: var(--gp-v2-danger, var(--gp-danger));
 }
 
 .modalButtonConfirm:hover {
-  background: var(--gp-vine-green);
+  background: #7e302a;
   transform: translateY(-1px);
+}
+
+.modalButton:focus-visible {
+  outline: 2px solid var(--gp-v2-grape, var(--gp-grape-purple));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
+  .modalButton {
+    transition-duration: 0ms;
+  }
+
+  .modalButtonConfirm:hover {
+    transform: none;
+  }
 }
 
 @keyframes slideIn {

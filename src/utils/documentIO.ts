@@ -69,6 +69,7 @@ function normalizeAnnotation(annotation: any, index: number): Annotation {
   const a = annotation || {};
   return {
     id: a.id || `anno-import-${index}`,
+    paragraphId: typeof a.paragraphId === 'string' ? a.paragraphId : undefined,
     content: a.content || '',
     createdAt: typeof a.createdAt === 'number' ? a.createdAt : Date.now(),
     chatThreads: Array.isArray(a.chatThreads) ? a.chatThreads.map(normalizeChatThread) : [],
@@ -79,9 +80,16 @@ function normalizeCitation(citation: any, index: number): Citation {
   const c = citation || {};
   return {
     id: c.id || `citation-import-${index}`,
-    sourceId: c.sourceId || '',
-    quote: c.quote || '',
-    createdAt: typeof c.createdAt === 'number' ? c.createdAt : Date.now(),
+    key: typeof c.key === 'string' ? c.key : undefined,
+    sourceId: typeof c.sourceId === 'string' ? c.sourceId : undefined,
+    quote: typeof c.quote === 'string' ? c.quote : undefined,
+    authors: typeof c.authors === 'string' ? c.authors : undefined,
+    title: typeof c.title === 'string' ? c.title : undefined,
+    year: typeof c.year === 'string' ? c.year : undefined,
+    abstract: typeof c.abstract === 'string' ? c.abstract : undefined,
+    doi: typeof c.doi === 'string' ? c.doi : undefined,
+    zoteroKey: typeof c.zoteroKey === 'string' ? c.zoteroKey : undefined,
+    createdAt: typeof c.createdAt === 'number' ? c.createdAt : undefined,
   };
 }
 
@@ -139,7 +147,7 @@ export function normalizeImportedDocument(data: any, idPrefix?: string): Documen
     id: docId,
     title: data.title || 'Untitled Document',
     createdAt: typeof data.createdAt === 'number' ? data.createdAt : Date.now(),
-    updatedAt: Date.now(),
+    updatedAt: typeof data.updatedAt === 'number' ? data.updatedAt : Date.now(),
     paragraphs: validatedParagraphs,
   };
 }

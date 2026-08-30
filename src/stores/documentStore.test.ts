@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useDocumentStore } from './documentStore';
+import { sampleDocument, useDocumentStore } from './documentStore';
 
 describe('documentStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(localStorage.getItem).mockReturnValue(null);
     useDocumentStore.getState().loadSampleDocument();
   });
 
@@ -45,6 +46,24 @@ describe('documentStore', () => {
       const updatedPara = useDocumentStore.getState().document.paragraphs.find(p => p.id === firstPara.id);
       expect(updatedPara?.annotations.length).toBe(initialAnnotations + 1);
     });
+
+    it('删除当前批注时应该清理悬空的聊天选择', () => {
+      const store = useDocumentStore.getState();
+      const annotation = store.document.paragraphs[0].annotations[0];
+      const thread = annotation.chatThreads[0];
+      store.setActiveAnnotation(annotation.id);
+      store.setActiveChatThread(thread.id);
+
+      store.deleteAnnotation(annotation.id);
+
+      const next = useDocumentStore.getState();
+      expect(next.activeAnnotationId).toBeNull();
+      expect(next.activeChatThreadId).toBeNull();
+      expect(
+        next.document.paragraphs.flatMap((paragraph) => paragraph.annotations)
+          .some((item) => item.id === annotation.id)
+      ).toBe(false);
+    });
   });
 
   describe('聊天线程', () => {
@@ -76,7 +95,39 @@ describe('documentStore', () => {
     it('应该能够加载示例文档', () => {
       const store = useDocumentStore.getState();
       store.loadSampleDocument();
-      expect(useDocumentStore.getState().document.title).toContain('Large Language Models');
+      expect(useDocumentStore.getState().document.title).toBe('Cultivating Trustworthy AI-Assisted Scholarship');
+    });
+
+    it('keeps the G4 demo seed deterministic and inside the frozen content contract', () => {
+      const annotations = sampleDocument.paragraphs.flatMap((paragraph) => paragraph.annotations);
+      const citations = sampleDocument.paragraphs.flatMap((paragraph) => paragraph.citations);
+      const threads = annotations.flatMap((annotation) => annotation.chatThreads);
+
+      expect(sampleDocument.id).toBe('grapepaper-demo-v2');
+      expect(sampleDocument.updatedAt).toBe(Date.UTC(2026, 7, 30, 8, 0, 0));
+      expect(sampleDocument.paragraphs).toHaveLength(3);
+      expect(annotations).toHaveLength(2);
+      expect(citations).toHaveLength(3);
+      expect(threads).toHaveLength(1);
+      expect(threads[0].messages).toHaveLength(2);
+      expect(annotations.map((annotation) => annotation.createdAt)).toEqual([
+        Date.UTC(2026, 7, 30, 7, 0, 0),
+        Date.UTC(2026, 7, 30, 7, 20, 0),
+      ]);
+    });
+
+    it('restores nested annotations, chat, and complete citation display fields from localStorage', () => {
+      vi.mocked(localStorage.getItem).mockReturnValue(JSON.stringify({
+        version: 1,
+        document: sampleDocument,
+      }));
+
+      useDocumentStore.getState().loadFromStorage();
+      const restored = useDocumentStore.getState().document;
+
+      expect(restored.updatedAt).toBe(sampleDocument.updatedAt);
+      expect(restored.paragraphs[0].annotations[0]).toEqual(sampleDocument.paragraphs[0].annotations[0]);
+      expect(restored.paragraphs[0].citations[0]).toEqual(sampleDocument.paragraphs[0].citations[0]);
     });
   });
 

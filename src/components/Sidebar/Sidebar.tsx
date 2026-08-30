@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useCallback, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useUI } from '../../contexts/UIContext';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,8 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
   const clearLocalDraft = useDocumentStore((s) => s.clearLocalDraft);
   const { toast, confirm } = useUI();
   const { t, i18n } = useTranslation();
+  const shouldReduceMotion = useReducedMotion();
+  const [selectedParagraphId, setSelectedParagraphId] = useState<string | null>(null);
 
   const changeLanguage = useCallback(async (lng: 'en' | 'zh-CN') => {
     await i18n.changeLanguage(lng);
@@ -52,7 +54,8 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
     a.download = `${document.title.replace(/[^a-zA-Z0-9]/g, '_')}.md`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [document]);
+    toast(t('toast.markdownExported'), 'success');
+  }, [document, t, toast]);
 
   const handleExportJson = useCallback(() => {
     const json = serializeDocumentToJson(document);
@@ -63,7 +66,8 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
     a.download = `${document.title.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [document]);
+    toast(t('toast.jsonExported'), 'success');
+  }, [document, t, toast]);
 
   const handleImportJson = useCallback(() => {
     const input = globalThis.document.createElement('input');
@@ -86,16 +90,17 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
             
             const validatedDocument = normalizeImportedDocument(importedData);
             setDocument(validatedDocument);
+            toast(t('toast.jsonImported'), 'success');
           } catch (error) {
               console.error('Error importing JSON:', error);
-              toast('Failed to import JSON file. Please ensure it is a valid GrapePaper document. Error: ' + (error instanceof Error ? error.message : 'Unknown error'), 'error');
+              toast(t('toast.jsonImportFailed'), 'error');
             }
         };
         reader.readAsText(file);
       }
     };
     input.click();
-  }, [setDocument, toast]);
+  }, [setDocument, toast, t]);
 
   const handleImportMarkdown = useCallback(() => {
     const input = globalThis.document.createElement('input');
@@ -111,16 +116,17 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
             const content = event.target?.result as string;
             const newDocument = parseMarkdownToDocument(content);
             setDocument(newDocument);
+            toast(t('toast.markdownImported'), 'success');
           } catch (error) {
             console.error('Error importing Markdown:', error);
-            toast('Failed to import Markdown file.', 'error');
+            toast(t('toast.markdownImportFailed'), 'error');
           }
         };
         reader.readAsText(file);
       }
     };
     input.click();
-  }, [setDocument, toast]);
+  }, [setDocument, toast, t]);
 
   const handleResetToSample = useCallback(async () => {
     const confirmed = await confirm({
@@ -151,9 +157,10 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
   return (
     <motion.aside
       className={styles.sidebar}
-      initial={{ x: -280 }}
-      animate={{ x: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      aria-label={t('sidebar.navigationLabel')}
+      initial={{ x: shouldReduceMotion ? 0 : -32, opacity: shouldReduceMotion ? 1 : 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.18 }}
     >
       {/* Brand */}
       <div className={styles.brand}>
@@ -165,7 +172,7 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
 
       {/* Document Title */}
       <div className={styles.docTitleSection}>
-        <div className={styles.docTitleLabel}>{t('sidebar.documentTitle')}</div>
+        <div className={styles.docTitleLabel} data-testid="doc-title-label">{t('sidebar.documentTitle')}</div>
         <input
           data-testid="doc-title-input"
           className={styles.docTitleInput}
@@ -177,55 +184,61 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
 
       {/* Paragraph List */}
       <div className={styles.paragraphList}>
-        <div className={styles.paragraphListLabel}>{t('sidebar.paragraphs')}</div>
+        <div className={styles.paragraphListLabel} data-testid="paragraph-list-label">{t('sidebar.paragraphs')}</div>
         {document.paragraphs.map((para) => (
-          <motion.div
+          <motion.button
+            type="button"
             key={para.id}
-            className={styles.paragraphItem}
-            whileHover={{ x: 2 }}
-            onClick={() => onScrollToParagraph(para.id)}
+            className={`${styles.paragraphItem} ${selectedParagraphId === para.id ? styles.paragraphItemActive : ''}`}
+            aria-current={selectedParagraphId === para.id ? 'location' : undefined}
+            whileHover={{ x: shouldReduceMotion ? 0 : 2 }}
+            onClick={() => {
+              setSelectedParagraphId(para.id);
+              onScrollToParagraph(para.id);
+            }}
           >
-            <span className={styles.paragraphNumber}>{para.order}</span>
+            <span className={styles.paragraphNumber} data-testid="paragraph-number">{para.order}</span>
             <div className={styles.paragraphPreview}>
               <div className={styles.paragraphPreviewText}>
                 {stripHtml(para.content) || 'Empty paragraph...'}
               </div>
               <div className={styles.paragraphMeta}>
                 {para.annotations.length > 0 && (
-                  <span className={styles.metaBadge}>
-                    {para.annotations.length} leaf{para.annotations.length > 1 ? 's' : ''}
+                  <span className={styles.metaBadge} data-testid="paragraph-meta-badge">
+                    {t('sidebar.leafCount', { count: para.annotations.length })}
                   </span>
                 )}
                 {para.citations.length > 0 && (
-                  <span className={styles.metaBadge}>
-                    {para.citations.length} ref{para.citations.length > 1 ? 's' : ''}
+                  <span className={styles.metaBadge} data-testid="paragraph-meta-badge">
+                    {t('sidebar.refCount', { count: para.citations.length })}
                   </span>
                 )}
               </div>
             </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
 
       {/* Status Indicator */}
-      <div className={styles.statusIndicator}>
+      <div className={styles.statusIndicator} role="status" aria-live="polite">
         <div className={styles.statusText}>
           <span className={styles.statusDot}></span>
-          <span>{t('sidebar.autosaved')}</span>
+          <span data-testid="status-text">{t('sidebar.autosaved')}</span>
         </div>
-        <div className={styles.statusTimestamp}>
+        <div className={styles.statusTimestamp} data-testid="status-timestamp">
           {new Date(document.updatedAt).toLocaleTimeString()}
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className={styles.actions}>
+        <div className={styles.groupLabel} data-testid="file-actions-label">{t('sidebar.fileActions')}</div>
         <div className={styles.actionGroup}>
           <button
             data-testid="import-json-btn"
             className={styles.actionBtn}
             onClick={handleImportJson}
-            title="Import JSON file"
+            title={t('sidebar.importJson')}
           >
             {t('sidebar.importJson')}
           </button>
@@ -233,7 +246,7 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
             data-testid="import-md-btn"
             className={styles.actionBtn}
             onClick={handleImportMarkdown}
-            title="Import Markdown file"
+            title={t('sidebar.importMd')}
           >
             {t('sidebar.importMd')}
           </button>
@@ -243,7 +256,7 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
             data-testid="export-json-btn"
             className={styles.actionBtn}
             onClick={handleExportJson}
-            title="Export as JSON"
+            title={t('sidebar.exportJson')}
           >
             {t('sidebar.exportJson')}
           </button>
@@ -251,17 +264,19 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
             data-testid="export-md-btn"
             className={styles.actionBtnPrimary}
             onClick={handleExportMarkdown}
-            title="Export as Markdown"
+            title={t('sidebar.exportMd')}
           >
             {t('sidebar.exportMd')}
           </button>
         </div>
-        <div className={styles.actionGroup}>
+        <div className={styles.maintenanceDivider} />
+        <div className={styles.groupLabel} data-testid="maintenance-label">{t('sidebar.maintenance')}</div>
+        <div className={`${styles.actionGroup} ${styles.maintenanceGroup}`}>
           <button
             data-testid="reset-sample-btn"
             className={styles.actionBtnSecondary}
             onClick={handleResetToSample}
-            title="Reset to sample document"
+            title={t('sidebar.resetSample')}
           >
             {t('sidebar.resetSample')}
           </button>
@@ -269,23 +284,28 @@ export default function Sidebar({ onScrollToParagraph }: SidebarProps) {
             data-testid="clear-draft-btn"
             className={styles.actionBtnSecondary}
             onClick={handleClearLocalDraft}
-            title="Clear local draft"
+            title={t('sidebar.clearDraft')}
           >
             {t('sidebar.clearDraft')}
           </button>
         </div>
+        <div className={styles.groupLabel} data-testid="language-label">{t('sidebar.language')}</div>
         <div className={styles.actionGroup}>
           <button
+            data-testid="language-en-btn"
             className={styles.actionBtn}
             onClick={() => changeLanguage('en')}
             title="English"
+            aria-pressed={i18n.language === 'en'}
           >
             EN
           </button>
           <button
+            data-testid="language-zh-btn"
             className={styles.actionBtn}
             onClick={() => changeLanguage('zh-CN')}
             title="中文"
+            aria-pressed={i18n.language === 'zh-CN'}
           >
             中文
           </button>

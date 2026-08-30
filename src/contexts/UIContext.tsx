@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 import styles from './UIContext.module.css';
 
 type ToastType = 'success' | 'error' | 'info';
@@ -37,6 +37,7 @@ interface UIProviderProps {
 
 export function UIProvider({ children }: UIProviderProps) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const confirmTriggerRef = useRef<HTMLElement | null>(null);
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
     options: ConfirmOptions;
@@ -61,6 +62,7 @@ export function UIProvider({ children }: UIProviderProps) {
   }, []);
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
+    confirmTriggerRef.current = globalThis.document?.activeElement as HTMLElement | null;
     return new Promise((resolve) => {
       setConfirmState({
         isOpen: true,
@@ -74,6 +76,9 @@ export function UIProvider({ children }: UIProviderProps) {
     if (confirmState.resolve) {
       confirmState.resolve(true);
       setConfirmState((prev) => ({ ...prev, isOpen: false, resolve: null }));
+      globalThis.requestAnimationFrame(() => {
+        if (confirmTriggerRef.current?.isConnected) confirmTriggerRef.current.focus();
+      });
     }
   }, [confirmState.resolve]);
 
@@ -81,8 +86,33 @@ export function UIProvider({ children }: UIProviderProps) {
     if (confirmState.resolve) {
       confirmState.resolve(false);
       setConfirmState((prev) => ({ ...prev, isOpen: false, resolve: null }));
+      globalThis.requestAnimationFrame(() => {
+        if (confirmTriggerRef.current?.isConnected) confirmTriggerRef.current.focus();
+      });
     }
   }, [confirmState.resolve]);
+
+  const handleDialogKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      handleCancel();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled])')
+    );
+    if (controls.length === 0) return;
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && globalThis.document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && globalThis.document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }, [handleCancel]);
 
   const value = {
     toast,
@@ -103,14 +133,22 @@ export function UIProvider({ children }: UIProviderProps) {
       ))}
       {/* ConfirmModal component will be rendered here */}
       {confirmState.isOpen && (
-        <div className={styles.modalOverlay} onClick={handleCancel}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>{confirmState.options.title}</h3>
-            <p className={styles.modalMessage}>{confirmState.options.message}</p>
+        <div className={styles.modalOverlay} onClick={handleCancel} onKeyDown={handleDialogKeyDown}>
+          <div
+            className={styles.modal}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="gp-confirm-title"
+            aria-describedby="gp-confirm-message"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="gp-confirm-title" className={styles.modalTitle}>{confirmState.options.title}</h3>
+            <p id="gp-confirm-message" className={styles.modalMessage}>{confirmState.options.message}</p>
             <div className={styles.modalActions}>
               <button
                 className={`${styles.modalButton} ${styles.modalButtonCancel}`}
                 onClick={handleCancel}
+                autoFocus
               >
                 {confirmState.options.cancelText || 'Cancel'}
               </button>

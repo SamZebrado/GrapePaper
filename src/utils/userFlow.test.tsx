@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { UIProvider } from '../contexts/UIContext'
 import App from '../App'
@@ -102,9 +102,8 @@ describe('User Flow Tests', () => {
       expect(screen.getByText('Updated annotation')).toBeInTheDocument()
     })
 
-    // Open chat
-    const updatedAnnotation = screen.getByText('Updated annotation')
-    fireEvent.click(updatedAnnotation)
+    // Open chat from the explicit leaf action
+    fireEvent.click(screen.getByRole('button', { name: 'Open discussion' }))
 
     // Verify chat panel opens
     await waitFor(() => {
@@ -112,16 +111,13 @@ describe('User Flow Tests', () => {
     })
 
     // Close chat
-    const closeBtns = screen.getAllByText('x')
-    // Find the close button with the specific class for chat panel
-    const chatCloseBtn = closeBtns.find(btn => btn.className.includes('closeBtn'))
-    if (chatCloseBtn) {
-      fireEvent.click(chatCloseBtn)
-    }
+    fireEvent.click(screen.getByTestId('chat-close-btn'))
 
     // Delete annotation
     const deleteBtn = screen.getByText('Delete')
     fireEvent.click(deleteBtn)
+    const deleteDialog = await screen.findByRole('alertdialog', { name: 'Delete annotation?' })
+    fireEvent.click(within(deleteDialog).getByRole('button', { name: 'Delete' }))
 
     // Wait for annotation to be deleted
     await waitFor(() => {
@@ -148,7 +144,7 @@ describe('User Flow Tests', () => {
     // Wait for title to reset to sample document
     await waitFor(() => {
       const titleInput = screen.getByPlaceholderText('Untitled Document')
-      expect(titleInput).toHaveValue('Large Language Models in Academic Writing: Opportunities and Challenges')
+      expect(titleInput).toHaveValue('Cultivating Trustworthy AI-Assisted Scholarship')
     })
   })
 
@@ -171,7 +167,7 @@ describe('User Flow Tests', () => {
     // Wait for title to reset to sample document
     await waitFor(() => {
       const titleInput = screen.getByPlaceholderText('Untitled Document')
-      expect(titleInput).toHaveValue('Large Language Models in Academic Writing: Opportunities and Challenges')
+      expect(titleInput).toHaveValue('Cultivating Trustworthy AI-Assisted Scholarship')
     })
 
     // Add some content

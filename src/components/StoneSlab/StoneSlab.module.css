@@ -1,47 +1,29 @@
 .slab {
   position: relative;
-  max-width: var(--gp-slab-max-width);
-  margin: 0 auto var(--gp-space-8);
-  padding: var(--gp-slab-padding);
-  border-radius: var(--gp-radius-stone);
-  /* Multi-layered stone texture */
+  width: min(100%, var(--gp-v2-slab-max));
+  margin: 0 auto var(--gp-v2-space-8);
+  padding: var(--gp-v2-space-8);
+  border: 1px solid rgb(37 40 33 / 22%);
+  border-right-color: rgb(37 40 33 / 30%);
+  border-bottom-color: rgb(37 40 33 / 32%);
+  border-radius: var(--gp-v2-radius-slab);
   background:
-    /* Surface noise */
     repeating-conic-gradient(
-      rgba(120, 115, 105, 0.03) 0% 25%,
+      rgb(37 40 33 / 3%) 0% 25%,
       transparent 0% 50%
-    ) 0 0 / 4px 4px,
-    /* Fine grain */
-    repeating-linear-gradient(
-      135deg,
-      rgba(140, 135, 125, 0.04) 0px,
-      transparent 1px,
-      transparent 3px
-    ),
-    /* Subtle veining */
+    ) 0 0 / 5px 5px,
     linear-gradient(
-      170deg,
-      rgba(180, 175, 165, 0.15) 0%,
-      transparent 20%,
-      transparent 40%,
-      rgba(160, 155, 145, 0.1) 42%,
-      transparent 44%,
-      transparent 70%,
-      rgba(170, 165, 155, 0.08) 72%,
-      transparent 74%
+      166deg,
+      transparent 0 38%,
+      rgb(37 40 33 / 2.5%) 40%,
+      transparent 43% 100%
     ),
-    /* Base stone color */
-    linear-gradient(
-      180deg,
-      #e8e3d8 0%,
-      #e2ddd2 30%,
-      #ddd8cc 60%,
-      #e0dbd0 100%
-    );
-  box-shadow: var(--gp-shadow-stone);
+    var(--gp-v2-stone);
+  box-shadow: var(--gp-v2-shadow-quiet);
   transition:
-    box-shadow var(--gp-duration-slow) var(--gp-ease-natural),
-    transform var(--gp-duration-slow) var(--gp-ease-natural);
+    box-shadow var(--gp-v2-duration-normal) var(--gp-v2-ease),
+    border-color var(--gp-v2-duration-normal) var(--gp-v2-ease),
+    transform var(--gp-v2-duration-normal) var(--gp-v2-ease);
   z-index: var(--gp-z-slab);
 }
 
@@ -50,12 +32,11 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  /* Top-left light source highlight */
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0.08) 30%,
-    transparent 60%
+    rgb(255 255 255 / 12%) 0%,
+    rgb(255 255 255 / 4%) 30%,
+    transparent 58%
   );
   pointer-events: none;
 }
@@ -65,19 +46,39 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  /* Bottom-right shadow edge */
-  background: linear-gradient(
-    315deg,
-    transparent 60%,
-    rgba(0, 0, 0, 0.04) 80%,
-    rgba(0, 0, 0, 0.08) 100%
-  );
+  border-right: 1px solid rgb(37 40 33 / 8%);
+  border-bottom: 1px solid rgb(37 40 33 / 10%);
   pointer-events: none;
 }
 
 .slab:hover {
-  box-shadow: var(--gp-shadow-stone-hover);
-  transform: translateY(-2px);
+  border-color: rgb(37 40 33 / 34%);
+  box-shadow: var(--gp-v2-shadow-raised);
+  transform: translateY(-1px);
+}
+
+.slab:focus-visible,
+.slab:focus-within {
+  outline: 2px solid var(--gp-v2-grape);
+  outline-offset: 2px;
+}
+
+.slab[data-selected='true'] {
+  box-shadow:
+    inset 3px 0 0 var(--gp-v2-botanical-700),
+    var(--gp-v2-shadow-quiet);
+}
+
+.slab[data-selected='true']:hover {
+  box-shadow:
+    inset 3px 0 0 var(--gp-v2-botanical-700),
+    var(--gp-v2-shadow-raised);
+}
+
+/* A citation preview must escape the slab's normal stacking context without
+   changing the slab material or page hierarchy. */
+.slab:has([data-testid='citation-trigger'][aria-expanded='true']) {
+  z-index: var(--gp-z-tooltip);
 }
 
 /* ---- Number Indicator ---- */
@@ -85,19 +86,36 @@
   position: absolute;
   top: -12px;
   left: 20px;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--gp-font-sans);
-  font-size: var(--gp-font-size-xs);
+  font-family: var(--gp-v2-font-ui);
+  font-size: 12px;
   font-weight: 700;
-  color: var(--gp-parchment);
-  background: linear-gradient(135deg, var(--gp-vine-green), var(--gp-leaf-green));
+  color: var(--gp-v2-surface);
+  background: var(--gp-v2-botanical-700);
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(45, 80, 22, 0.3);
+  box-shadow: 0 1px 3px rgb(37 40 33 / 14%);
   z-index: 2;
+}
+
+.selectedBadge {
+  position: absolute;
+  top: var(--gp-v2-space-3);
+  right: 64px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gp-v2-space-1);
+  color: var(--gp-v2-botanical-700);
+  font: var(--gp-v2-type-meta);
+  letter-spacing: 0.01em;
+}
+
+.selectedMark {
+  font-size: 11px;
 }
 
 /* ---- TipTap Editor ---- */
@@ -106,15 +124,31 @@
   z-index: 1;
   min-height: 80px;
   outline: none;
-  font-family: var(--gp-font-serif);
-  font-size: var(--gp-font-size-md);
-  line-height: var(--gp-line-height-relaxed);
-  color: var(--gp-text-primary);
+  max-width: 68ch;
+  margin-inline: auto;
+  padding: var(--gp-v2-space-2) var(--gp-v2-space-3);
+  border-radius: var(--gp-v2-radius-control);
+  font: var(--gp-v2-type-body-en);
+  color: var(--gp-v2-ink);
+  transition: background-color var(--gp-v2-duration-fast) var(--gp-v2-ease);
+}
+
+:global(html[lang='zh-CN']) .editor {
+  max-width: 42em;
+  font: var(--gp-v2-type-body-zh);
+  text-align: start;
+  letter-spacing: normal;
+}
+
+.slab[data-editing='true'] .editor {
+  background-color: rgb(251 249 244 / 78%);
+  box-shadow: inset 0 0 0 1px rgb(37 40 33 / 8%);
 }
 
 .editor :global(.tiptap) {
   outline: none;
   min-height: 60px;
+  caret-color: var(--gp-v2-grape);
 }
 
 .editor :global(.tiptap p) {
@@ -128,7 +162,7 @@
 .editor :global(.tiptap p.is-editor-empty:first-child::before) {
   content: attr(data-placeholder);
   float: left;
-  color: var(--gp-text-muted);
+  color: var(--gp-v2-text-muted);
   pointer-events: none;
   height: 0;
   font-style: italic;
@@ -137,23 +171,63 @@
 /* ---- Toolbar ---- */
 .toolbar {
   display: flex;
-  gap: var(--gp-space-1);
-  margin-bottom: var(--gp-space-3);
-  padding-bottom: var(--gp-space-2);
-  border-bottom: 1px solid rgba(138, 138, 122, 0.2);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gp-v2-space-1);
+  margin-bottom: var(--gp-v2-space-3);
+  padding-bottom: var(--gp-v2-space-2);
+  border-bottom: 1px solid rgb(37 40 33 / 14%);
 }
 
-.toolbarBtn {
-  padding: var(--gp-space-1) var(--gp-space-2);
-  font-size: var(--gp-font-size-xs);
-  color: var(--gp-text-secondary);
-  border-radius: var(--gp-radius-sm);
-  transition: all var(--gp-duration-fast) var(--gp-ease-natural);
+.annotationBtn,
+.formatBtn {
+  min-height: var(--gp-v2-target-min);
+  color: var(--gp-v2-text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--gp-v2-radius-control);
+  font: var(--gp-v2-type-control);
+  transition:
+    color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    background-color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    border-color var(--gp-v2-duration-fast) var(--gp-v2-ease);
 }
 
-.toolbarBtn:hover {
-  color: var(--gp-vine-green);
-  background: rgba(45, 80, 22, 0.08);
+.annotationBtn {
+  padding-inline: var(--gp-v2-space-3);
+}
+
+.formatBtn {
+  position: relative;
+  width: var(--gp-v2-target-min);
+}
+
+.annotationBtn:hover,
+.formatBtn:hover {
+  color: var(--gp-v2-botanical-700);
+  background: rgb(203 213 197 / 38%);
+}
+
+.annotationBtn:focus-visible,
+.formatBtn:focus-visible,
+.deleteBtn:focus-visible {
+  outline: 2px solid var(--gp-v2-grape);
+  outline-offset: 2px;
+}
+
+.formatBtn[aria-pressed='true'] {
+  color: var(--gp-v2-ink);
+  background: var(--gp-v2-grape-wash);
+  border-color: var(--gp-v2-grape);
+}
+
+.formatBtn[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  right: 9px;
+  bottom: 6px;
+  left: 9px;
+  height: 2px;
+  background: var(--gp-v2-grape);
 }
 
 /* ---- Annotations Area ---- */
@@ -177,19 +251,24 @@
 /* ---- Delete Button ---- */
 .deleteBtn {
   position: absolute;
-  top: -8px;
-  right: 16px;
-  width: 24px;
-  height: 24px;
+  top: var(--gp-v2-space-2);
+  right: var(--gp-v2-space-2);
+  width: var(--gp-v2-target-min);
+  height: var(--gp-v2-target-min);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: var(--gp-text-muted);
-  background: var(--gp-parchment-dark);
-  border-radius: 50%;
-  opacity: 0;
-  transition: all var(--gp-duration-fast) var(--gp-ease-natural);
+  color: var(--gp-v2-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--gp-v2-radius-control);
+  opacity: 0.72;
+  transition:
+    color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    background-color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    border-color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    opacity var(--gp-v2-duration-fast) var(--gp-v2-ease);
   z-index: 3;
 }
 
@@ -198,6 +277,21 @@
 }
 
 .deleteBtn:hover {
-  color: var(--gp-danger);
-  background: #fde8e8;
+  color: var(--gp-v2-danger);
+  background: rgb(155 64 56 / 8%);
+  border-color: rgb(155 64 56 / 22%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slab,
+  .editor,
+  .annotationBtn,
+  .formatBtn,
+  .deleteBtn {
+    transition-duration: 0ms;
+  }
+
+  .slab:hover {
+    transform: none;
+  }
 }

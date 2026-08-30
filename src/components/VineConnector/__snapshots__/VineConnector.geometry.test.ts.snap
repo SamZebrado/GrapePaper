@@ -1,0 +1,366 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildVineGeometry > snapshots deterministic variants across at least ten stable ID pairs 1`] = `
+[
+  {
+    "geometry": {
+      "branches": [
+        "M 78 14 Q 73 11, 69 10",
+        "M 82 28 Q 86 26, 90 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 69,
+          "cy": 10,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 90,
+          "cy": 26,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 78 11, 82 29, 80 39",
+    },
+    "ids": [
+      "",
+      "",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 77 14 Q 82 11, 86 10",
+        "M 83 28 Q 79 26, 75 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 86,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 75,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 77 11, 83 29, 80 39",
+    },
+    "ids": [
+      "a",
+      "b",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 81 14 Q 76 11, 72 10",
+        "M 79 28 Q 83 26, 87 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 72,
+          "cy": 10,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 87,
+          "cy": 26,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 81 11, 79 29, 80 39",
+    },
+    "ids": [
+      "same",
+      "same",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 82 14 Q 87 11, 91 10",
+        "M 78 28 Q 74 26, 70 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 91,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 70,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 82 11, 78 29, 80 39",
+    },
+    "ids": [
+      "paragraph-1",
+      "paragraph-2",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 78 14 Q 83 11, 87 10",
+        "M 82 28 Q 78 26, 74 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 87,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 74,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 78 11, 82 29, 80 39",
+    },
+    "ids": [
+      "short",
+      "paragraph-with-a-very-long-stable-identifier",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 82 14 Q 77 11, 73 10",
+        "M 78 28 Q 82 26, 86 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 73,
+          "cy": 10,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 86,
+          "cy": 26,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 82 11, 78 29, 80 39",
+    },
+    "ids": [
+      "段落一",
+      "段落二",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 83 14 Q 88 11, 92 10",
+        "M 77 28 Q 73 26, 69 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 92,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 69,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 83 11, 77 29, 80 39",
+    },
+    "ids": [
+      "🍇",
+      "🪨",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 78 14 Q 83 11, 87 10",
+        "M 82 28 Q 78 26, 74 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 87,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 74,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 78 11, 82 29, 80 39",
+    },
+    "ids": [
+      "with spaces",
+      "with/slash",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 76 14 Q 81 11, 85 10",
+        "M 84 28 Q 80 26, 76 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 85,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 76,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 76 11, 84 29, 80 39",
+    },
+    "ids": [
+      "punctuation:[]{}",
+      "query?x=1&y=2",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 78 14 Q 83 11, 87 10",
+        "M 82 28 Q 78 26, 74 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 87,
+          "cy": 10,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 74,
+          "cy": 26,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 78 11, 82 29, 80 39",
+    },
+    "ids": [
+      "alpha.beta",
+      "alpha-beta",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 82 14 Q 77 11, 73 10",
+        "M 78 28 Q 82 26, 86 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 73,
+          "cy": 10,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 86,
+          "cy": 26,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 82 11, 78 29, 80 39",
+    },
+    "ids": [
+      "00000000-0000-0000-0000-000000000000",
+      "ffffffff-ffff-ffff-ffff-ffffffffffff",
+    ],
+  },
+  {
+    "geometry": {
+      "branches": [
+        "M 80 14 Q 75 11, 71 10",
+        "M 80 28 Q 84 26, 88 26",
+      ],
+      "filledAreaRatio": 0.021458102042468105,
+      "leaves": [
+        {
+          "cx": 71,
+          "cy": 10,
+          "flip": -1,
+          "height": 8,
+          "width": 5,
+        },
+        {
+          "cx": 88,
+          "cy": 26,
+          "flip": 1,
+          "height": 8,
+          "width": 5,
+        },
+      ],
+      "mainPath": "M 80 1 C 80 11, 80 29, 80 39",
+    },
+    "ids": [
+      "mixed_中文_123",
+      "NEXT::Δ",
+    ],
+  },
+]
+`;

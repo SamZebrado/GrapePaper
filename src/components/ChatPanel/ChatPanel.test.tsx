@@ -3,13 +3,15 @@ import type { Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ChatPanel from './ChatPanel';
 import type { ChatThread } from '../../types';
+import i18n from '../../i18n';
 
 describe('ChatPanel', () => {
   let mockThread: ChatThread;
   let mockOnClose: Mock;
   let mockOnSendMessage: Mock;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
     mockThread = {
       id: 'thread-1',
       messages: [
@@ -45,9 +47,22 @@ describe('ChatPanel', () => {
       <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
     );
     
-    expect(screen.getByText('AI Chat')).toBeInTheDocument();
+    expect(screen.getByText('AI chat')).toBeInTheDocument();
     expect(screen.getByText('Discussion Thread')).toBeInTheDocument();
     expect(screen.getByText('mock')).toBeInTheDocument();
+    expect(screen.getByText('MOCK · Simulated responses only')).toBeInTheDocument();
+  });
+
+  it('localizes the chat header and persistent mock boundary in zh-CN', async () => {
+    await i18n.changeLanguage('zh-CN');
+    render(
+      <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
+    );
+
+    expect(screen.getByText('AI 对话')).toBeInTheDocument();
+    expect(screen.getByText('讨论线程')).toBeInTheDocument();
+    expect(screen.getByText('模拟 · 仅提供占位回复')).toBeInTheDocument();
+    expect(screen.queryByText('AI chat')).not.toBeInTheDocument();
   });
 
   it('应该显示现有消息', () => {
@@ -77,7 +92,7 @@ describe('ChatPanel', () => {
       <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
     );
     
-    const closeButton = screen.getByText('x');
+    const closeButton = screen.getByTestId('chat-close-btn');
     fireEvent.click(closeButton);
     
     expect(mockOnClose).toHaveBeenCalled();
@@ -165,5 +180,41 @@ describe('ChatPanel', () => {
     await waitFor(() => {
       expect(input.value).toBe('');
     });
+  });
+
+  it('closes with Escape', () => {
+    render(
+      <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
+    );
+    fireEvent.keyDown(screen.getByTestId('chat-panel'), { key: 'Escape' });
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses a labelled modal, traps focus, and inerts the workspace at 900px', async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+    const workspace = document.createElement('div');
+    workspace.id = 'gp-workspace';
+    document.body.appendChild(workspace);
+
+    const { unmount } = render(
+      <ChatPanel thread={mockThread} onClose={mockOnClose} onSendMessage={mockOnSendMessage} />
+    );
+    const panel = screen.getByRole('dialog');
+    expect(panel).toHaveAttribute('aria-modal', 'true');
+    expect(workspace).toHaveAttribute('inert');
+    const input = screen.getByTestId('chat-input');
+    await waitFor(() => expect(input).toHaveFocus());
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(screen.getByTestId('chat-close-btn')).toHaveFocus();
+
+    unmount();
+    expect(workspace).not.toHaveAttribute('inert');
+    workspace.remove();
+    window.matchMedia = originalMatchMedia;
   });
 });

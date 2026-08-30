@@ -17,9 +17,9 @@ describe('documentIO', () => {
       
       const markdown = serializeDocumentToMarkdown(document);
       
-      expect(markdown).toContain('# Large Language Models');
-      expect(markdown).toContain('Academic Writing');
-      expect(markdown).toContain('Opportunities and Challenges');
+      expect(markdown).toContain('# Cultivating Trustworthy AI-Assisted Scholarship');
+      expect(markdown).toContain('Academic writing is beginning to treat large language models as instruments');
+      expect(markdown).toContain('preserving an auditable path from evidence to conclusion');
     });
 
     it('Markdown 应该包含标题和段落', () => {
@@ -189,6 +189,15 @@ describe('documentIO', () => {
       
       expect(normalized.title).toBe(originalDocument.title);
       expect(normalized.paragraphs.length).toBe(originalDocument.paragraphs.length);
+      expect(normalized.updatedAt).toBe(originalDocument.updatedAt);
+      expect(normalized.paragraphs[0].annotations[0]).toMatchObject({
+        id: originalDocument.paragraphs[0].annotations[0].id,
+        paragraphId: originalDocument.paragraphs[0].annotations[0].paragraphId,
+        content: originalDocument.paragraphs[0].annotations[0].content,
+      });
+      expect(normalized.paragraphs[0].citations[0]).toEqual(
+        originalDocument.paragraphs[0].citations[0],
+      );
     });
 
     it('Markdown 解析基本 Roundtrip', () => {

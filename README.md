@@ -16,7 +16,7 @@ GrapePaper 使用自然灵感的视觉元素来渲染学术文档：
 ## 快速开始
 
 ```bash
-# 需要 Node.js >= 18 LTS
+# 需要 Node.js >= 20.19（推荐 Node.js 22 LTS）
 npm install
 npm run dev
 # 打开 http://localhost:5173/
@@ -52,7 +52,7 @@ src/
 │   ├── StoneSlab/       # 段落编辑器 (TipTap)
 │   ├── GrapeLeaf/       # 批注显示
 │   ├── DewdropCitation/ # 带有悬停预览的引用
-│   ├── ChatBubble/      # 消息气泡 (基于年龄的收缩)
+│   ├── ChatBubble/      # 带明确角色与时间的消息气泡
 │   ├── ChatPanel/       # 滑入式讨论面板
 │   ├── VineConnector/   # 段落间的 SVG 藤蔓
 │   ├── Sidebar/         # 文档导航
@@ -71,10 +71,10 @@ src/
 ### 已实现
 - ✅ 石板段落渲染，带有石材纹理 CSS
 - ✅ 石板内的 TipTap 富文本编辑（粗体、斜体）
-- ✅ 葡萄叶批注（点击展开，再次点击打开聊天）
+- ✅ 葡萄叶批注（明确的展开、编辑、删除与讨论控件）
 - ✅ 露水引用悬停预览（作者、标题、摘要、DOI 链接）
 - ✅ 段落间的藤蔓连接器 SVG
-- ✅ 基于年龄收缩动画的聊天气泡显示
+- ✅ 带角色标签与时间的聊天气泡显示
 - ✅ 带有文档标题编辑和段落导航的侧边栏
 - ✅ 导出为 Markdown（.md 文件下载）
 - ✅ 导出为 JSON（.json 文件下载）
@@ -86,7 +86,7 @@ src/
 - ✅ 重置为示例文档
 - ✅ 清除本地草稿
 - ✅ 国际化支持（英文和中文）
-- ✅ 60+ 全面测试
+- ✅ 98 项自动化测试，另有真实 Chromium 最终 QA
 
 ### 模拟/占位
 - ⚠️ 聊天当前是**模拟交互层**，不连接到真实的 LLM
@@ -124,7 +124,7 @@ GrapePaper renders academic documents using nature-inspired visuals:
 ## Quick Start
 
 ```bash
-# Requires Node.js >= 18 LTS
+# Requires Node.js >= 20.19 (Node.js 22 LTS recommended)
 npm install
 npm run dev
 # Open http://localhost:5173/
@@ -160,7 +160,7 @@ src/
 │   ├── StoneSlab/       # Paragraph editor (TipTap)
 │   ├── GrapeLeaf/       # Annotation display
 │   ├── DewdropCitation/ # Citation with hover preview
-│   ├── ChatBubble/      # Message bubble (age-based shrinking)
+│   ├── ChatBubble/      # Message bubble with explicit role and time
 │   ├── ChatPanel/       # Slide-in discussion panel
 │   ├── VineConnector/   # SVG vine between sections
 │   ├── Sidebar/         # Document navigation
@@ -179,10 +179,10 @@ src/
 ### Working
 - ✅ Stone slab paragraph rendering with stone texture CSS
 - ✅ TipTap rich text editing inside slabs (bold, italic)
-- ✅ Grape leaf annotations (click to expand, click again to open chat)
+- ✅ Grape leaf annotations with explicit expand, edit, delete, and discussion controls
 - ✅ Dewdrop citation hover preview (authors, title, abstract, DOI link)
 - ✅ Vine connector SVGs between paragraphs
-- ✅ Chat bubble display with age-based shrinking animation
+- ✅ Chat bubbles with explicit role labels and timestamps
 - ✅ Sidebar with document title editing and paragraph navigation
 - ✅ Export to Markdown (.md file download)
 - ✅ Export to JSON (.json file download)
@@ -194,7 +194,7 @@ src/
 - ✅ Reset to sample document
 - ✅ Clear local draft
 - ✅ Internationalization support (English and Chinese)
-- ✅ 60+ comprehensive tests
+- ✅ 98 automated tests plus final real-Chromium QA
 
 ### Mock / Placeholder
 - ⚠️ Chat is currently a **mock interaction layer** and does not connect to a real LLM

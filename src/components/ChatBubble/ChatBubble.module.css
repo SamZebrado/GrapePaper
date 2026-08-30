@@ -7,7 +7,7 @@
   font-size: var(--gp-font-size-sm);
   line-height: var(--gp-line-height-normal);
   word-wrap: break-word;
-  transition: all var(--gp-duration-slow) var(--gp-ease-natural);
+  transition: border-color var(--gp-v2-duration-fast) var(--gp-v2-ease);
 }
 
 .bubbleUser {
@@ -37,7 +37,7 @@
 /* Role label */
 .roleLabel {
   display: block;
-  font-size: var(--gp-font-size-xs);
+  font-size: 12px;
   font-weight: 600;
   margin-bottom: var(--gp-space-1);
   text-transform: uppercase;
@@ -52,30 +52,6 @@
   color: var(--gp-leaf-green);
 }
 
-/* Tiny dot state for very old messages */
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: all var(--gp-duration-normal) var(--gp-ease-natural);
-}
-
-.dotUser {
-  background: var(--gp-grape-purple);
-  box-shadow: 0 0 6px rgba(107, 47, 160, 0.3);
-}
-
-.dotAssistant {
-  background: var(--gp-leaf-green);
-  box-shadow: 0 0 6px rgba(45, 80, 22, 0.3);
-}
-
-.dot:hover {
-  transform: scale(1.5);
-}
-
 /* Message row */
 .messageRow {
   display: flex;
@@ -85,7 +61,11 @@
 
 /* Timestamp */
 .timestamp {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--gp-text-muted);
   margin-top: var(--gp-space-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble { transition-duration: 0ms; }
 }

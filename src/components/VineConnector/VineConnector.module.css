@@ -1,55 +1,76 @@
 .connector {
-  display: flex;
-  justify-content: center;
-  padding: var(--gp-space-2) 0;
   position: relative;
-  z-index: var(--gp-z-vine);
-  max-width: 200px;
+  z-index: var(--gp-z-base);
+  display: flex;
+  width: 160px;
+  max-width: 160px;
+  height: 40px;
+  max-height: 40px;
+  justify-content: center;
+  padding: 0;
   margin: 0 auto;
   overflow: hidden;
+  pointer-events: none;
+  contain: layout paint;
 }
 
 .vineSvg {
-  width: 100%;
-  max-width: 200px;
-  height: 60px;
+  display: block;
+  width: 160px;
+  max-width: 160px;
+  height: 40px;
+  max-height: 40px;
   overflow: hidden;
-  position: relative;
-  z-index: 1;
+  pointer-events: none;
 }
 
-/* Main vine path animation */
-@keyframes sway {
-  0%, 100% {
-    transform: rotate(0deg);
+.mainStem,
+.branch,
+.leafVein {
+  fill: none;
+  stroke: var(--gp-v2-botanical-600);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mainStem {
+  stroke-width: 1.25;
+  opacity: 0.38;
+}
+
+.branch {
+  stroke-width: 0.875;
+  opacity: 0.28;
+}
+
+.leaf {
+  fill: var(--gp-v2-botanical-600);
+  opacity: 0.26;
+}
+
+.leafVein {
+  stroke-width: 0.5;
+  opacity: 0.34;
+}
+
+@media (max-width: 900px) {
+  .connector,
+  .vineSvg {
+    width: 120px;
+    max-width: 120px;
+    height: 32px;
+    max-height: 32px;
   }
-  25% {
-    transform: rotate(0.5deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connector,
+  .vineSvg,
+  .mainStem,
+  .branch,
+  .leaf {
+    animation: none;
+    transition: none;
   }
-  75% {
-    transform: rotate(-0.5deg);
-  }
-}
-
-.vinePath {
-  animation: sway 6s ease-in-out infinite;
-  transform-origin: center center;
-}
-
-/* Small leaf decorations */
-.leafDeco {
-  animation: sway 6s ease-in-out infinite;
-  transform-origin: center bottom;
-}
-
-.leafDeco:nth-child(2) {
-  animation-delay: -1.5s;
-}
-
-.leafDeco:nth-child(3) {
-  animation-delay: -3s;
-}
-
-.leafDeco:nth-child(4) {
-  animation-delay: -4.5s;
 }

@@ -1,11 +1,15 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useDocumentStore } from './stores/documentStore';
 import Sidebar from './components/Sidebar/Sidebar';
 import EditorCanvas from './components/EditorCanvas/EditorCanvas';
 import ChatPanel from './components/ChatPanel/ChatPanel';
 import type { ChatThread } from './types';
+import { openContextSurface } from './utils/contextSurface';
+import './App.css';
+import { useTranslation } from 'react-i18next';
 
 function App() {
+  const { t } = useTranslation();
   const document = useDocumentStore((s) => s.document);
   const activeAnnotationId = useDocumentStore((s) => s.activeAnnotationId);
   const activeChatThreadId = useDocumentStore((s) => s.activeChatThreadId);
@@ -13,6 +17,7 @@ function App() {
   const setActiveChatThread = useDocumentStore((s) => s.setActiveChatThread);
   const addChatMessage = useDocumentStore((s) => s.addChatMessage);
   const createChatThread = useDocumentStore((s) => s.createChatThread);
+  const chatTriggerRef = useRef<HTMLElement | null>(null);
 
   // Find the active annotation and its thread
   const activeThread: ChatThread | null = useMemo(() => {
@@ -34,7 +39,9 @@ function App() {
       for (const para of document.paragraphs) {
         for (const annot of para.annotations) {
           if (annot.id === annotationId) {
+            chatTriggerRef.current = globalThis.document.activeElement as HTMLElement | null;
             setActiveAnnotation(annotationId);
+            openContextSurface({ type: 'chat', ownerId: annotationId });
             let threadId = activeChatThreadId;
             if (annot.chatThreads.length === 0) {
               threadId = createChatThread(annotationId);
@@ -65,30 +72,34 @@ function App() {
         addChatMessage(
           activeChatThreadId,
           'assistant',
-          'This is a simulated AI response. In a production environment, this would connect to an LLM API to provide intelligent feedback on your annotation.'
+          t('chat.simulatedResponse')
         );
       }, 800);
     },
-    [activeChatThreadId, addChatMessage]
+    [activeChatThreadId, addChatMessage, t]
   );
 
   const handleScrollToParagraph = useCallback((paragraphId: string) => {
     const el = globalThis.document.getElementById(`paragraph-${paragraphId}`);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const reduceMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
     }
   }, []);
 
   return (
-    <>
-      <Sidebar onScrollToParagraph={handleScrollToParagraph} />
-      <EditorCanvas onOpenAnnotation={handleOpenAnnotation} />
+    <div className="appShell" data-chat-open={activeThread ? 'true' : 'false'}>
+      <div id="gp-workspace" className="workspace">
+        <Sidebar onScrollToParagraph={handleScrollToParagraph} />
+        <EditorCanvas onOpenAnnotation={handleOpenAnnotation} isChatOpen={Boolean(activeThread)} />
+      </div>
       <ChatPanel
         thread={activeThread}
         onClose={handleCloseChat}
         onSendMessage={handleSendMessage}
+        returnFocusTo={chatTriggerRef.current}
       />
-    </>
+    </div>
   );
 }
 

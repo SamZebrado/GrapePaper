@@ -115,8 +115,48 @@
   --gp-z-modal: 500;
 
   /* ---- Layout ---- */
-  --gp-sidebar-width: 280px;
-  --gp-chat-panel-width: 400px;
+  --gp-sidebar-width: 256px;
+  --gp-chat-panel-width: 360px;
   --gp-slab-max-width: 780px;
   --gp-slab-padding: var(--gp-space-8);
+
+  /* ---- Visual / Product V2: StoneSlab runtime subset (Gate G2.1) ---- */
+  --gp-v2-stone: #e3e0d8;
+  --gp-v2-surface: #fbf9f4;
+  --gp-v2-ink: #252821;
+  --gp-v2-text-secondary: #4f574d;
+  --gp-v2-text-muted: #5b6359;
+  --gp-v2-botanical-700: #30462f;
+  --gp-v2-botanical-600: #3f5a3c;
+  --gp-v2-botanical-200: #cbd5c5;
+  --gp-v2-grape: #704b78;
+  --gp-v2-grape-wash: #f2e7f4;
+  --gp-v2-danger: #9b4038;
+  --gp-v2-font-editorial-en: 'Iowan Old Style', Charter, 'Palatino Linotype', Georgia, serif;
+  --gp-v2-font-editorial-zh: 'Songti SC', STSong, 'Noto Serif CJK SC', serif;
+  --gp-v2-font-ui: Inter, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --gp-v2-type-body-en: 400 17px/1.75 var(--gp-v2-font-editorial-en);
+  --gp-v2-type-body-zh: 400 17px/1.82 var(--gp-v2-font-editorial-zh);
+  --gp-v2-type-control: 600 14px/1.35 var(--gp-v2-font-ui);
+  --gp-v2-type-meta: 500 12px/1.4 var(--gp-v2-font-ui);
+  --gp-v2-space-1: 4px;
+  --gp-v2-space-2: 8px;
+  --gp-v2-space-3: 12px;
+  --gp-v2-space-8: 32px;
+  --gp-v2-target-min: 44px;
+  --gp-v2-slab-max: 780px;
+  --gp-v2-radius-control: 6px;
+  --gp-v2-radius-surface: 10px;
+  --gp-v2-radius-slab: 8px 12px 10px 14px;
+  --gp-v2-shadow-quiet: 0 1px 3px rgb(37 40 33 / 8%);
+  --gp-v2-shadow-raised: 0 6px 18px rgb(37 40 33 / 10%);
+  --gp-v2-duration-fast: 120ms;
+  --gp-v2-duration-normal: 180ms;
+  --gp-v2-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --gp-sidebar-width: 216px;
+  }
 }

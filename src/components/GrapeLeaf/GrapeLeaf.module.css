@@ -1,250 +1,312 @@
-.leaf {
+.leafWrapper {
   position: relative;
   display: inline-flex;
+  max-width: 100%;
+  color: var(--gp-v2-ink);
+  font-family: var(--gp-v2-font-ui);
+}
+
+.tendril {
+  position: absolute;
+  top: -17px;
+  left: 50%;
+  z-index: 0;
+  width: 18px;
+  height: 20px;
+  border-top: 1.25px solid var(--gp-v2-botanical-600);
+  border-left: 1.25px solid var(--gp-v2-botanical-600);
+  border-radius: 14px 0 0;
+  opacity: 0.68;
+  transform: rotate(20deg);
+  pointer-events: none;
+}
+
+.leafTrigger {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 220px;
+  height: 104px;
+  max-width: 100%;
+  padding: 0;
+  color: var(--gp-v2-surface);
+  border-radius: 14px;
+  transition:
+    filter var(--gp-v2-duration-normal) var(--gp-v2-ease),
+    transform var(--gp-v2-duration-normal) var(--gp-v2-ease);
+}
+
+.leafTrigger:hover {
+  filter: brightness(1.045);
+  transform: scale(1.01);
+}
+
+.leafTrigger:focus-visible,
+.collapseButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.deleteButton:focus-visible,
+.editTextarea:focus-visible {
+  outline: 2px solid var(--gp-v2-grape);
+  outline-offset: 2px;
+}
+
+.leafArtwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 3px 8px rgb(37 40 33 / 14%));
+  pointer-events: none;
+}
+
+.leafSurface {
+  stroke: rgb(37 40 33 / 26%);
+  stroke-width: 1;
+}
+
+.primaryVein,
+.secondaryVein,
+.petiole {
+  fill: none;
+  stroke: rgb(251 249 244 / 20%);
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.primaryVein {
+  stroke-width: 1.35;
+}
+
+.secondaryVein {
+  stroke-width: 0.9;
+}
+
+.petiole {
+  stroke: var(--gp-v2-botanical-600);
+  stroke-width: 1.25;
+}
+
+.collapsedSafeArea {
+  position: absolute;
+  top: 31px;
+  right: 58px;
+  bottom: 28px;
+  left: 58px;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
   align-items: center;
-  gap: var(--gp-space-2);
-  padding: var(--gp-space-2) var(--gp-space-4) var(--gp-space-2) var(--gp-space-5);
-  background: linear-gradient(
-    135deg,
-    var(--gp-leaf-green) 0%,
-    var(--gp-leaf-light) 50%,
-    var(--gp-leaf-green) 100%
-  );
-  clip-path: polygon(
-    0% 50%,
-    3% 35%,
-    10% 20%,
-    20% 10%,
-    35% 3%,
-    50% 0%,
-    65% 3%,
-    80% 10%,
-    90% 20%,
-    97% 35%,
-    100% 50%,
-    97% 65%,
-    90% 80%,
-    80% 90%,
-    65% 97%,
-    50% 100%,
-    35% 97%,
-    20% 90%,
-    10% 80%,
-    3% 65%
-  );
-  color: white;
-  font-family: var(--gp-font-sans);
-  font-size: var(--gp-font-size-xs);
-  font-weight: 500;
-  cursor: pointer;
-  transition: filter var(--gp-duration-normal) var(--gp-ease-natural);
-  box-shadow: var(--gp-shadow-leaf);
-  max-width: 180px;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.collapsedText {
+  display: block;
+  width: 100%;
   overflow: hidden;
+  color: var(--gp-v2-surface);
+  font: var(--gp-v2-type-meta);
+  font-weight: 650;
+  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.leaf:hover {
-  filter: brightness(1.1) saturate(1.1);
+.messageCount {
+  margin-top: 2px;
+  color: rgb(251 249 244 / 82%);
+  font: 500 11px/1.3 var(--gp-v2-font-ui);
+  white-space: nowrap;
 }
 
-/* Leaf vein decoration */
-.leaf::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-50%);
-}
-
-/* Tendril connector */
-.tendril {
-  position: absolute;
-  top: -16px;
-  left: 50%;
-  width: 2px;
-  height: 16px;
-  background: linear-gradient(
-    to top,
-    var(--gp-leaf-green),
-    var(--gp-vine-green),
-    transparent
-  );
-  transform: translateX(-50%);
-}
-
-.tendril::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  background: var(--gp-leaf-light);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.6;
-}
-
-/* Chat badge */
 .chatBadge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  font-size: 10px;
-  font-weight: 700;
-  color: white;
-  background: var(--gp-grape-purple);
-  border-radius: 9px;
-  border: 2px solid var(--gp-parchment);
-  z-index: 2;
+  top: 12px;
+  right: 22px;
+  display: grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  padding-inline: 5px;
+  color: var(--gp-v2-surface);
+  background: var(--gp-v2-grape);
+  border: 2px solid var(--gp-v2-surface);
+  border-radius: 999px;
+  font: 700 11px/1 var(--gp-v2-font-ui);
 }
 
-/* Expanded leaf (tooltip) */
-.leafExpanded {
+.expandedPanel {
   position: relative;
-  display: inline-block;
-  padding: var(--gp-space-3) var(--gp-space-4);
-  background: linear-gradient(
-    135deg,
-    var(--gp-leaf-green) 0%,
-    var(--gp-leaf-light) 100%
-  );
-  border-radius: var(--gp-radius-md);
-  color: white;
-  font-family: var(--gp-font-sans);
-  font-size: var(--gp-font-size-sm);
-  line-height: var(--gp-line-height-normal);
-  max-width: 280px;
-  cursor: pointer;
-  box-shadow: var(--gp-shadow-leaf);
-  white-space: normal;
-  word-wrap: break-word;
+  z-index: 1;
+  width: min(300px, calc(100vw - 48px));
+  padding: var(--gp-v2-space-3);
+  color: var(--gp-v2-ink);
+  background: var(--gp-v2-surface);
+  border: 1px solid rgb(48 70 47 / 30%);
+  border-left: 3px solid var(--gp-v2-botanical-700);
+  border-radius: var(--gp-v2-radius-surface);
+  box-shadow: var(--gp-v2-shadow-raised);
 }
 
-.leafExpanded::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  width: 2px;
-  height: 8px;
-  background: var(--gp-leaf-green);
-  transform: translateX(-50%);
+.expandedPanel[aria-current='true'] {
+  box-shadow:
+    inset 0 0 0 2px var(--gp-v2-grape-wash),
+    var(--gp-v2-shadow-raised);
 }
 
-.leafContent {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+.expandedHeader {
+  display: grid;
+  min-height: 44px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--gp-v2-space-2);
+  padding-bottom: var(--gp-v2-space-2);
+  border-bottom: 1px solid rgb(37 40 33 / 14%);
 }
 
-.leafExpanded .leafContent {
-  -webkit-line-clamp: unset;
+.leafIcon {
+  width: 34px;
+  height: 34px;
+  overflow: visible;
 }
 
-/* Edit textarea */
-.editTextarea {
-  width: 100%;
-  min-height: 80px;
-  padding: var(--gp-space-2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--gp-radius-sm);
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-family: var(--gp-font-sans);
-  font-size: var(--gp-font-size-sm);
-  resize: vertical;
-  margin-bottom: var(--gp-space-2);
+.expandedTitle {
+  color: var(--gp-v2-botanical-700);
+  font: var(--gp-v2-type-control);
 }
 
-.editTextarea::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+.chatOpenLabel {
+  grid-column: 2;
+  color: var(--gp-v2-grape);
+  font: var(--gp-v2-type-meta);
 }
 
-/* Edit actions */
+.chatOpenLabel > span {
+  margin-right: 3px;
+  font-size: 8px;
+}
+
+.collapseButton {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  width: var(--gp-v2-target-min);
+  height: var(--gp-v2-target-min);
+  color: var(--gp-v2-text-secondary);
+  border-radius: var(--gp-v2-radius-control);
+  font-size: 20px;
+}
+
+.collapseButton:hover,
+.secondaryButton:hover {
+  color: var(--gp-v2-botanical-700);
+  background: rgb(203 213 197 / 35%);
+}
+
+.expandedContent {
+  margin: var(--gp-v2-space-3) 0;
+  color: var(--gp-v2-ink);
+  font: 400 15px/1.55 var(--gp-v2-font-ui);
+  overflow-wrap: anywhere;
+}
+
+.leafActions,
 .editActions {
   display: flex;
-  gap: var(--gp-space-2);
+  flex-wrap: wrap;
+  gap: var(--gp-v2-space-2);
   justify-content: flex-end;
 }
 
-/* Leaf actions */
-.leafActions {
-  display: flex;
-  gap: var(--gp-space-2);
-  margin-top: var(--gp-space-2);
-  padding-top: var(--gp-space-2);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Buttons */
-.saveButton,
-.cancelButton,
-.editButton,
+.primaryButton,
+.secondaryButton,
 .deleteButton {
-  padding: var(--gp-space-1) var(--gp-space-2);
-  border: none;
-  border-radius: var(--gp-radius-sm);
-  font-size: var(--gp-font-size-xs);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--gp-duration-fast) var(--gp-ease-natural);
+  min-height: var(--gp-v2-target-min);
+  padding-inline: var(--gp-v2-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--gp-v2-radius-control);
+  font: var(--gp-v2-type-control);
+  transition:
+    color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    background-color var(--gp-v2-duration-fast) var(--gp-v2-ease),
+    border-color var(--gp-v2-duration-fast) var(--gp-v2-ease);
 }
 
-.saveButton {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+.primaryButton {
+  color: var(--gp-v2-surface);
+  background: var(--gp-v2-botanical-700);
+  border-color: var(--gp-v2-botanical-700);
 }
 
-.saveButton:hover {
-  background: rgba(255, 255, 255, 0.3);
+.primaryButton[aria-expanded='true'] {
+  color: var(--gp-v2-grape);
+  background: var(--gp-v2-grape-wash);
+  border-color: var(--gp-v2-grape);
 }
 
-.cancelButton {
+.primaryButton:disabled {
+  color: var(--gp-v2-text-muted);
   background: transparent;
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-color: rgb(37 40 33 / 18%);
+  cursor: not-allowed;
 }
 
-.cancelButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.editButton {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.editButton:hover {
-  background: rgba(255, 255, 255, 0.2);
+.secondaryButton {
+  color: var(--gp-v2-text-secondary);
+  background: transparent;
+  border-color: rgb(37 40 33 / 18%);
 }
 
 .deleteButton {
-  background: rgba(255, 69, 69, 0.3);
-  color: white;
-  border: 1px solid rgba(255, 69, 69, 0.5);
+  color: var(--gp-v2-danger);
+  background: transparent;
+  border-color: rgb(155 64 56 / 24%);
 }
 
 .deleteButton:hover {
-  background: rgba(255, 69, 69, 0.5);
+  background: rgb(155 64 56 / 8%);
+  border-color: rgb(155 64 56 / 40%);
 }
 
-/* Wrapper for positioning */
-.leafWrapper {
-  position: relative;
-  display: inline-flex;
+.editorRegion {
+  padding-top: var(--gp-v2-space-3);
+}
+
+.editorLabel {
+  display: block;
+  margin-bottom: var(--gp-v2-space-2);
+  color: var(--gp-v2-text-secondary);
+  font: var(--gp-v2-type-meta);
+}
+
+.editTextarea {
+  width: 100%;
+  min-height: 96px;
+  margin-bottom: var(--gp-v2-space-3);
+  padding: var(--gp-v2-space-3);
+  color: var(--gp-v2-ink);
+  background: #fff;
+  border: 1px solid rgb(37 40 33 / 22%);
+  border-radius: var(--gp-v2-radius-control);
+  font: 400 15px/1.55 var(--gp-v2-font-ui);
+  resize: vertical;
+}
+
+.editTextarea::placeholder {
+  color: var(--gp-v2-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leafTrigger,
+  .collapseButton,
+  .primaryButton,
+  .secondaryButton,
+  .deleteButton {
+    transition-duration: 0ms;
+  }
+
+  .leafTrigger:hover {
+    transform: none;
+  }
 }
