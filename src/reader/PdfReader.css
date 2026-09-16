@@ -1,0 +1,35 @@
+.gp-pdf-reader { min-width: 0; color: #29332c; }
+.gp-pdf-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 13px 16px; border-bottom: 1px solid #dedfd5; background: #fafbf6; }
+.gp-pdf-toolbar button, .gp-pdf-fallback button, .gp-pdf-toolbar select { min-height: 36px; border: 1px solid #d5dccf; border-radius: 7px; background: #fff; color: #354b39; padding: 6px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+.gp-pdf-toolbar button:hover, .gp-pdf-fallback button:hover { background: #eef3e8; }
+.gp-pdf-toolbar button:focus-visible, .gp-pdf-fallback button:focus-visible, .gp-pdf-toolbar input:focus-visible, .gp-pdf-toolbar select:focus-visible, .gp-pdf-fallback textarea:focus-visible { outline: 3px solid #52753f; outline-offset: 3px; }
+.gp-pdf-toolbar button:disabled { opacity: .45; cursor: default; }
+.gp-pdf-toolbar button[aria-pressed="true"] { color: #fff; background: #446139; border-color: #446139; }
+.gp-pdf-modes, .gp-pdf-navigation { display: flex; align-items: center; gap: 5px; }
+.gp-pdf-navigation label { font-size: 12px; white-space: nowrap; }
+.gp-pdf-navigation input { width: 43px; padding: 5px 2px; border: 1px solid #d5dccf; border-radius: 5px; font: inherit; text-align: center; color: #29332c; background: white; }
+.gp-pdf-zoom { font-size: 12px; white-space: nowrap; }
+.gp-pdf-hint { margin: 0; padding: 11px 18px; font-size: 12px; color: #626c5c; background: #f7f8f1; }
+.gp-pdf-scroll { overflow: auto; overscroll-behavior: contain; max-height: min(78vh, 1100px); min-height: 240px; padding: 20px; background: #e9ecdf; box-sizing: border-box; }
+.gp-pdf-page { position: relative; margin: 0 auto; background: #fff; box-shadow: 0 4px 24px #26342016; flex: none; }
+.gp-pdf-page-loading { pointer-events: none; }
+.gp-pdf-canvas-host canvas { display: block; }
+.gp-pdf-text-host { position: absolute; inset: 0; }
+/* PDF.js TextLayer layout rules, adapted from Mozilla PDF.js (Apache-2.0). */
+.gp-pdf-text-layer { position: absolute; inset: 0; overflow: clip; opacity: 1; line-height: 1; letter-spacing: normal; word-spacing: normal; text-align: initial; text-size-adjust: none; -webkit-text-size-adjust: none; forced-color-adjust: none; transform-origin: 0 0; caret-color: CanvasText; --min-font-size: 1; --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size)); --min-font-size-inv: calc(1 / var(--min-font-size)); }
+.gp-pdf-text-layer :is(span, br) { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0 0; }
+.gp-pdf-text-layer > :not(.markedContent), .gp-pdf-text-layer .markedContent span:not(.markedContent) { z-index: 1; --font-height: 0; font-size: calc(var(--text-scale-factor) * var(--font-height)); --scale-x: 1; --rotate: 0deg; transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv)); }
+.gp-pdf-text-layer .markedContent { display: contents; }
+.gp-pdf-text-layer ::selection { background: #80955d66; color: transparent; }
+.gp-pdf-mode-text .gp-pdf-text-layer :is(span, br) { user-select: text; -webkit-user-select: text; }
+.gp-pdf-mode-box, .gp-pdf-mode-lasso { touch-action: none; }
+.gp-pdf-mode-box .gp-pdf-text-layer, .gp-pdf-mode-lasso .gp-pdf-text-layer { user-select: none; }
+.gp-pdf-mode-box .gp-pdf-text-layer :is(span, br), .gp-pdf-mode-lasso .gp-pdf-text-layer :is(span, br), .gp-pdf-mode-box, .gp-pdf-mode-lasso { cursor: crosshair; }
+.gp-pdf-drawing { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.gp-pdf-drawing :is(rect, polygon) { fill: #77955424; stroke: #527439; stroke-width: 2; stroke-dasharray: 5 3; }
+.gp-pdf-status, .gp-pdf-notice { padding: 10px 18px; margin: 0; font-size: 13px; color: #526342; background: #f6f8ee; }
+.gp-pdf-error { padding: 12px 18px; margin: 0; color: #823d2b; background: #fff0e8; font-size: 13px; }
+.gp-pdf-fallback { padding: 12px 18px; border-top: 1px solid #dfe3d7; }
+.gp-pdf-fallback p { font-size: 13px; color: #56624e; }
+.gp-pdf-fallback textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 160px; padding: 14px; font: 14px/1.7 Georgia, serif; border: 1px solid #cbd3c0; border-radius: 7px; background: white; color: #29332c; }
+@media (max-width: 600px) { .gp-pdf-toolbar { padding: 10px; gap: 9px; } .gp-pdf-scroll { padding: 12px; } .gp-pdf-toolbar button { padding: 6px 9px; } }

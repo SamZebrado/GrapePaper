@@ -1,0 +1,12 @@
+<groupbox onload="window.GrapePaperPreferences.init(this)">
+  <label><html:h2>GrapePaper Companion</html:h2></label>
+  <html:p>在 PDF 中选择一段文字，再点击「GrapePaper 伴读」。网页中点击对号才确认读过；插件不会写入已读批注。</html:p>
+  <html:label for="grapepaper-app-url">GrapePaper 网页地址 / Web app address</html:label>
+  <html:input id="grapepaper-app-url" type="url" style="width: 100%;" placeholder="http://localhost:5173/" />
+  <html:div style="margin-top: 8px;">
+    <html:button type="button" onclick="window.GrapePaperPreferences.save(this)">保存地址 / Save address</html:button>
+  </html:div>
+  <html:p id="grapepaper-preference-status" role="status" />
+  <html:p>Only an explicit click opens the web companion with your selected text, paper title, DOI and page. The plugin does not read or upload the PDF file, send API keys, or record reading progress.</html:p>
+  <html:p>Use a trusted HTTPS deployment or a local development server. The receiving web app can read the selected content; the URL fragment is a transfer format, not encryption.</html:p>
+</groupbox>

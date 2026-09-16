@@ -1,0 +1,30 @@
+name: Verify reading companion
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run test:all
+      - run: npm run typecheck
+      - run: npm run lint:reading
+      - run: npm run build
+      - run: npm run build:zotero
+      - run: npx playwright install --with-deps chromium
+      - name: Browser reading flow
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/grapepaper-vite.log 2>&1 &
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grapepaper-zotero-experimental
+          path: zotero/dist/*.xpi

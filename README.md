@@ -1,213 +1,84 @@
 # GrapePaper 🍇
 
-一个以葡萄藤为主题的学术论文编辑器 —— 视觉隐喻实验。
+**葡萄伴读**：保留英文原文，用中文梳理论证、追溯引用实验，再偶尔遇到一张文献故事卡。网页阅读器与实验版 Zotero 插件共享伴读流程。原有葡萄笔记编辑器保留在「葡萄笔记」。
 
-**版本**: v0.1.20
+## 最小操作
 
-## 项目简介
-
-GrapePaper 使用自然灵感的视觉元素来渲染学术文档：
-- **石板** —— 段落以纹理石板的形式呈现
-- **葡萄叶** —— 批注以叶子形状的元素生长出来
-- **露水** —— 引用以半透明水滴的形式闪烁，带有悬停预览
-- **藤蔓连接器** —— SVG 贝塞尔曲线将段落连接在一起
-- **聊天气泡** —— AI 讨论线程从批注中浮现（当前为模拟）
-
-## 快速开始
+需要 **Node.js 22.13+（推荐 Node 24）**，以及支持 PDF.js 的现代桌面浏览器。
 
 ```bash
-# 需要 Node.js >= 20.19（推荐 Node.js 22 LTS）
-npm install
+npm ci --ignore-scripts
 npm run dev
-# 打开 http://localhost:5173/
 ```
 
-## 构建
+打开终端显示的本地地址，选择 PDF 或试读示例：
+
+1. 选文字、框选或随手画圈，提取当前页的选段。
+2. 生成中文伴读，或复制提示词到常用 AI；已有笔记可通过 JSON 导入。
+3. 读完点击 **✓ 我读过了**。选择、翻页和 AI 回答均不会自动确认。
+4. 默认每确认 3 个不同选段出现阅读间奏；可改为 5、8 段或关闭。有来源的故事优先；没有可用故事时给一个回读问题。
+
+默认只在内存中保留阅读标记，刷新或关闭后消失。不显示全文完成率、连续打卡或待读清单。可在阅读偏好中开启本机保存；关闭时删除保存的数据。保存内容仅包括文档哈希、已确认选段哈希和间奏计数，PDF、选段、模型回复不随阅读标记保存。笔记编辑器仍使用它原有的草稿保存机制。
+
+## 连接伴读模型
+
+另开终端，配置支持 JSON 输出的 OpenAI-compatible 服务：
 
 ```bash
-npm run build    # tsc + vite build → dist/
-npm run preview # 在本地服务构建
-npm run typecheck # 仅 TypeScript 检查
+export GRAPEPAPER_API_BASE_URL='http://localhost:11434/v1'
+export GRAPEPAPER_MODEL='your-installed-model'
+npm run server
 ```
 
-## 技术栈
+示例中的模型名称需换成已安装的模型。云端模型使用提供商的 HTTPS base URL，并在**服务端环境**设置 `GRAPEPAPER_API_KEY`。不要使用 `VITE_*` 保存密钥。网页开发服务器已代理 `/api` 到本地 `127.0.0.1:8787`。
 
-| 层级 | 选择 |
-|------|------|
-| 框架 | React 18 + TypeScript 5.6 |
-| 构建工具 | Vite 6 (esbuild) |
-| 状态管理 | Zustand 5 |
-| 富文本 | TipTap 2 (ProseMirror) |
-| 动画 | Framer Motion 11 |
-| 国际化 | i18next |
-| 测试 | Vitest + @testing-library/react |
-| 样式 | CSS Modules + CSS Variables |
-| 许可证 | MIT |
+AI 只接收明确提交的选段、当前页上下文和提供的来源材料；「圈选后自动生成」需自行开启。本地示例是预写教学内容，未配置模型时不会伪装成真实 AI。提示词复制和笔记导入不需要模型服务。
 
-## 项目结构
+[配置、输入输出格式与来源范围](docs/companion-api.md)
 
-```
-src/
-├── components/          # 组件
-│   ├── StoneSlab/       # 段落编辑器 (TipTap)
-│   ├── GrapeLeaf/       # 批注显示
-│   ├── DewdropCitation/ # 带有悬停预览的引用
-│   ├── ChatBubble/      # 带明确角色与时间的消息气泡
-│   ├── ChatPanel/       # 滑入式讨论面板
-│   ├── VineConnector/   # 段落间的 SVG 藤蔓
-│   ├── Sidebar/         # 文档导航
-│   └── EditorCanvas/    # 主编辑区域
-├── i18n/                # 国际化文件
-│   ├── locales/
-│   │   ├── en.ts        # 英文翻译
-│   │   └── zh-CN.ts     # 中文翻译
-├── stores/              # Zustand 文档存储
-├── styles/              # 主题系统 + 全局 CSS
-└── types/               # TypeScript 接口
+## Zotero 插件
+
+```bash
+npm run build:zotero
 ```
 
-## 当前状态（如实说明）
+在 Zotero 中通过「工具 → 插件 → 从文件安装插件」安装 `zotero/dist/grapepaper-0.1.0.xpi`，在 GrapePaper 设置中填入网页地址。选中文字后点击 **GrapePaper 伴读**；到网页读完后再点对号。已打开的同源网页通过内存握手接收新选段，延续阅读会话。
 
-### 已实现
-- ✅ 石板段落渲染，带有石材纹理 CSS
-- ✅ 石板内的 TipTap 富文本编辑（粗体、斜体）
-- ✅ 葡萄叶批注（明确的展开、编辑、删除与讨论控件）
-- ✅ 露水引用悬停预览（作者、标题、摘要、DOI 链接）
-- ✅ 段落间的藤蔓连接器 SVG
-- ✅ 带角色标签与时间的聊天气泡显示
-- ✅ 带有文档标题编辑和段落导航的侧边栏
-- ✅ 导出为 Markdown（.md 文件下载）
-- ✅ 导出为 JSON（.json 文件下载）
-- ✅ 从 JSON 导入（.json 文件）
-- ✅ 从 Markdown 导入（.md 文件）
-- ✅ 添加/删除段落
-- ✅ 通过内联输入对话框添加批注
-- ✅ localStorage 持久化（数据在页面刷新后保留）
-- ✅ 重置为示例文档
-- ✅ 清除本地草稿
-- ✅ 国际化支持（英文和中文）
-- ✅ 98 项自动化测试，另有真实 Chromium 最终 QA
+插件按 Zotero 7/8 官方阅读器 API 实现，目前是**实验版选段桥接**，尚未在真实 Zotero 桌面完成安装验证；不是完整内嵌侧栏，也不自动同步 Zotero 数据库。[安装、兼容性和桥接说明](zotero/README.md)
 
-### 模拟/占位
-- ⚠️ 聊天当前是**模拟交互层**，不连接到真实的 LLM
-- ⚠️ 引用当前是**仅展示**：使用硬编码的示例数据，支持引用详情的悬停预览，但不支持编辑、创建、删除或 Zotero 同步
+## 能力与限制
 
-### 未实现
-- ❌ PDF 导入或渲染
-- ❌ Zotero 集成
-- ❌ 真实的 AI/LLM API 连接
-- ❌ 文件导入（DOCX、LaTeX）
-- ❌ 深色主题
-- ❌ 移动端响应式布局
+| 功能 | 当前范围 |
+| --- | --- |
+| PDF 阅读 | 本地 PDF.js 渲染；文字选择、矩形框选、自由套索；翻页、缩放、纯文本辅助视图 |
+| 中文伴读 | 论证作用、引用实验、短摘录、定位、回读问题；真实模型需配置 |
+| 引用背景 | 提取末尾最多 5 页中的参考文献；可补充实际来源摘录和链接；可选 Crossref 书目候选搜索 |
+| 故事与争议 | 从提供的来源片段生成或导入；来源不足时不生成故事。不能把文字匹配当成事实核查 |
+| 阅读确认 | 手动确认、相同页相同文本去重、可选本机保存；无全文完成压力 |
+| 双端入口 | 独立网页 + Zotero 选段桥接，界面为中文伴读；原编辑器保留中英文切换 |
+| 原笔记编辑器 | 石板段落、葡萄叶批注、露水引用、Markdown/JSON 导入导出；其旧聊天仍为明确标注的模拟 |
 
-## 设计理念
+扫描 PDF 需先 OCR。复杂栏排、公式和文字顺序可能提取不准，应核对当前选段。套索以词的文字框中心判断包含关系，不做图片或公式识别。单文件上限 100 MB、网页选段上限 12,000 字符、Zotero 选段上限 4,000 字符。
 
-核心思想是文档编辑不必看起来像一个空白的白色页面。通过使用有机视觉隐喻 —— 石头、叶子、藤蔓、露水 —— 写作体验变得不那么令人生畏，特别是对于那些在传统学术写作界面中挣扎的用户。
+当前不会自动获取付费论文全文、实时搜索新闻或验证学者生平；完整引用实验解读需要实际来源摘录。Crossref 仅提供候选书目信息。静态部署可用 PDF、提示词和导入功能；AI 需要另行部署和保护后端，不能把本地开发服务直接暴露为公共代理。
+
+## 开发与验证
+
+```bash
+npm run test:all      # 网页逻辑 + 本地服务 + Zotero 桥接
+npm run typecheck
+npm run lint:reading # 本轮阅读器代码；旧编辑器的 lint 债务仍保留
+npm run build
+npm run build:zotero
+npm run test:e2e     # 需先启动 npm run dev，并安装 Playwright Chromium
+```
+
+CI 执行上述构建和测试，并上传构建出的实验版 XPI。真实模型推理与真实 Zotero 安装需在对应环境验证；自动测试使用受控响应，不能替代这些验证。
+
+技术栈：React 18、TypeScript、Vite、PDF.js、Zustand、TipTap；MIT 许可。PDF.js 及其衍生 CSS 遵循 Apache-2.0，[第三方说明](THIRD_PARTY_NOTICES.md)。
+
+下一步优先验证真实 Zotero 使用，再扩展可追溯的全文来源获取和内嵌伴读。
 
 ---
 
-# GrapePaper 🍇
-
-A grape-vine themed academic paper editor — a visual metaphor experiment.
-
-**Version**: v0.1.20
-
-## What It Is
-
-GrapePaper renders academic documents using nature-inspired visuals:
-- **Stone Slabs** — paragraphs appear as textured stone tablets
-- **Grape Leaves** — annotations grow as leaf-shaped elements
-- **Dewdrops** — citations shimmer as translucent water drops with hover preview
-- **Vine Connectors** — SVG bezier curves link sections together
-- **Chat Bubbles** — AI discussion threads emerge from annotations (currently mock)
-
-## Quick Start
-
-```bash
-# Requires Node.js >= 20.19 (Node.js 22 LTS recommended)
-npm install
-npm run dev
-# Open http://localhost:5173/
-```
-
-## Build
-
-```bash
-npm run build    # tsc + vite build → dist/
-npm run preview # serve the build locally
-npm run typecheck # TypeScript check only
-```
-
-## Tech Stack
-
-| Layer | Choice |
-|-------|--------|
-| Framework | React 18 + TypeScript 5.6 |
-| Build | Vite 6 (esbuild) |
-| State | Zustand 5 |
-| Rich Text | TipTap 2 (ProseMirror) |
-| Animation | Framer Motion 11 |
-| Internationalization | i18next |
-| Testing | Vitest + @testing-library/react |
-| Styling | CSS Modules + CSS Variables |
-| License | MIT |
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── StoneSlab/       # Paragraph editor (TipTap)
-│   ├── GrapeLeaf/       # Annotation display
-│   ├── DewdropCitation/ # Citation with hover preview
-│   ├── ChatBubble/      # Message bubble with explicit role and time
-│   ├── ChatPanel/       # Slide-in discussion panel
-│   ├── VineConnector/   # SVG vine between sections
-│   ├── Sidebar/         # Document navigation
-│   └── EditorCanvas/    # Main editing area
-├── i18n/                # Internationalization files
-│   ├── locales/
-│   │   ├── en.ts        # English translations
-│   │   └── zh-CN.ts     # Chinese translations
-├── stores/              # Zustand document store
-├── styles/              # Theme system + global CSS
-└── types/               # TypeScript interfaces
-```
-
-## Current State (Honest)
-
-### Working
-- ✅ Stone slab paragraph rendering with stone texture CSS
-- ✅ TipTap rich text editing inside slabs (bold, italic)
-- ✅ Grape leaf annotations with explicit expand, edit, delete, and discussion controls
-- ✅ Dewdrop citation hover preview (authors, title, abstract, DOI link)
-- ✅ Vine connector SVGs between paragraphs
-- ✅ Chat bubbles with explicit role labels and timestamps
-- ✅ Sidebar with document title editing and paragraph navigation
-- ✅ Export to Markdown (.md file download)
-- ✅ Export to JSON (.json file download)
-- ✅ Import from JSON (.json file)
-- ✅ Import from Markdown (.md file)
-- ✅ Add/delete paragraphs
-- ✅ Add annotations via inline input dialog
-- ✅ localStorage persistence (data survives page refresh)
-- ✅ Reset to sample document
-- ✅ Clear local draft
-- ✅ Internationalization support (English and Chinese)
-- ✅ 98 automated tests plus final real-Chromium QA
-
-### Mock / Placeholder
-- ⚠️ Chat is currently a **mock interaction layer** and does not connect to a real LLM
-- ⚠️ Citations are currently **display-only**: they use hardcoded sample data, support hover preview of reference details, but do not support editing, creation, deletion, or Zotero synchronization
-
-### Not Implemented
-- ❌ PDF import or rendering
-- ❌ Zotero integration
-- ❌ Real AI/LLM API connection
-- ❌ File import (DOCX, LaTeX)
-- ❌ Dark theme
-- ❌ Mobile responsive layout
-
-## Design Philosophy
-
-The core idea is that document editing doesn't have to look like a blank white page. By using organic visual metaphors — stone, leaves, vines, dewdrops — the writing experience becomes less intimidating, particularly for users who struggle with the traditional academic writing interface.
+**English** — GrapePaper pairs original PDF text with a Chinese reading companion. Select text, draw a rectangle or lasso, inspect the explanation and citations, then explicitly check the passage as read. Reading markers stay in memory unless local persistence is enabled. Occasional sourced story cards or reflection prompts add variety without a document completion score. A local server connects to an OpenAI-compatible model; API keys remain server-side. The experimental Zotero 7/8 bridge transfers a selected excerpt into the same web reader. Full-text retrieval, live news search, OCR and real Zotero desktop validation are not yet included. See the setup and evidence limits above.

@@ -1,3 +1,5 @@
+> Historical v0.1.20 snapshot. For current reading/PDF/AI/Zotero capabilities, see the [README](../README.md).
+
 # GrapePaper Visual / Product V2 — Known limitations
 
 Date: 2026-08-30

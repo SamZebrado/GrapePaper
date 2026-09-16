@@ -1,0 +1,13 @@
+{
+  "manifest_version": 2,
+  "name": "GrapePaper Companion",
+  "version": "0.1.0",
+  "description": "Open selected PDF passages in the GrapePaper reading companion.",
+  "applications": {
+    "zotero": {
+      "id": "grapepaper@grapepaper.app",
+      "strict_min_version": "7.0",
+      "strict_max_version": "8.0.*"
+    }
+  }
+}

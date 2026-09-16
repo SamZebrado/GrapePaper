@@ -1,0 +1,101 @@
+.grapeApplication { width: 100%; min-width: 0; color: #29372b; }
+.grapeTopbar { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 4vw; border-bottom: 1px solid #d8ded1; background: #f9f8f1; font-family: var(--gp-v2-font-ui); }
+.grapeBrand { display: flex; align-items: center; gap: 12px; font-size: 23px; font-family: Georgia, serif; letter-spacing: -.5px; }
+.grapeBrand svg { width: 32px; height: 36px; }
+.grapeBrand small { font-size: 13px; font-family: var(--gp-v2-font-ui); color: #65725c; letter-spacing: 1px; margin-left: 7px; }
+.grapeTopbar nav { display: flex; gap: 8px; }
+.grapeTopbar nav button { padding: 9px 14px; border-radius: 7px; color: #4d5e48; font-size: 14px; }
+.grapeTopbar nav button[aria-pressed=true] { background: #e2e9db; color: #294226; }
+.grapeEditor { position: relative; min-height: calc(100vh - 76px); }
+.grapeEditor .appShell { width: 100%; }
+.grapeEditor > .editorReturn { position: fixed; right: 22px; top: 14px; z-index: 600; padding: 12px; background: #e5ebdd; border: 1px solid #87977a; border-radius: 8px; }
+.readingWorkspace { padding: 36px 4vw 60px; max-width: 1800px; margin: auto; font-family: var(--gp-v2-font-ui); }
+.readingWorkspace p { line-height: 1.75; }
+.readingHeading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 28px; }
+.eyebrow { font-size: 10px; font-weight: 650; letter-spacing: 2px; color: #617151; }
+.readingHeading h1 { font-size: clamp(24px,2.5vw,34px); font-family: var(--gp-v2-font-editorial-zh); margin: 9px 0 10px; color: #2d412b; }
+.readingHeading p { margin: 0; color: #5c6957; font-size: 14px; }
+.readingWorkspace button { min-height: 40px; border: 1px solid #bdc8b5; background: #f9faf5; color: #355330; border-radius: 7px; padding: 9px 13px; font-size: 13px; font-family: inherit; transition: background .15s; }
+.readingWorkspace button:hover:not(:disabled) { background: #e9eedf; }
+.readingWorkspace button:disabled { opacity: .6; cursor: default; }
+.readingWorkspace .primary { color: #fffdf4; background: #3f5b35; border-color: #3f5b35; }
+.readingWorkspace .primary:hover:not(:disabled) { background: #2e4727; }
+.readerActions { display: flex; gap: 10px; flex-shrink: 0; }
+.readingGrid { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(340px,1fr); gap: 25px; align-items: start; }
+.paperColumn,.companionColumn { min-width: 0; border: 1px solid #d5ddcd; border-radius: 12px; overflow: hidden; background: #fbfcf7; }
+.paperColumn { background: #edf0e7; }
+.columnHeading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 20px; border-bottom: 1px solid #d5ddcd; font-size: 11px; font-weight: 600; letter-spacing: 1.1px; color: #5b6a51; background: #f5f7ee; }
+.columnHeading span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: 0; font-weight: 400; }
+.columnHeading span:first-child { flex-shrink: 0; }
+.memoryStatus { background: #e5ebdc; color: #3e5235; border-radius: 12px; padding: 2px 9px; }
+.emptyReading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 480px; gap: 16px; text-align: center; padding: 50px 30px; background: radial-gradient(ellipse at 50% 40%, #fbfcf6, #edf0e7); }
+.emptyReading h2 { font-size: 23px; color: #344b2e; font-family: var(--gp-v2-font-editorial-zh); }
+.emptyReading p { color: #62705c; font-size: 14px; margin: 0; }
+.emptyReading small { font-size: 11px; color: #65735d; }
+.vineMark { font-size: 72px; color: #70815e; line-height: 1; margin-bottom: 15px; }
+.companionEmpty { padding: 45px 30px; min-height: 480px; }
+.leafMark { display: block; color: #7c6584; font-size: 48px; margin-bottom: 20px; }
+.companionEmpty h2 { font-size: 22px; line-height: 1.7; color: #34462f; margin-bottom: 20px; font-family: var(--gp-v2-font-editorial-zh); }
+.companionEmpty p { font-size: 14px; color: #5e6c55; }
+.readingSteps { display: flex; flex-wrap: wrap; gap: 9px; border-top: 1px solid #dce1d4; padding-top: 22px; margin: 25px 0; }
+.readingSteps span { padding: 6px 10px; font-size: 12px; background: #eef1e7; border-radius: 14px; color: #526448; }
+.readingWorkspace .muted { color: #65705f; font-size: 12px; }
+.samplePaper { background: #fffdf8; margin: 24px; padding: 32px; border: 1px solid #dddcd0; box-shadow: 0 2px 9px #31402909; font-family: Georgia,'Times New Roman',serif; }
+.sampleTag { color: #6f775f; font-family: var(--gp-v2-font-ui); font-size: 10px; letter-spacing: .4px; }
+.samplePaper h2 { font-size: 28px; margin: 20px 0 8px; color: #283c2d; }
+.samplePaper .sampleSubtitle { font-size: 13px; color: #737762; margin-bottom: 30px; }
+.samplePaper section { margin: 30px 0; }
+.samplePaper h3 { font-size: 15px; margin-bottom: 13px; }
+.samplePaper p { font-size: 17px; line-height: 1.85; }
+.samplePaper section button { font-size: 11px; font-family: var(--gp-v2-font-ui); background: #eff3e8; }
+.selectedPassage { padding: 22px 24px 12px; }
+.selectedPassage > div { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 12px; color: #516449; }
+.selectedPassage blockquote { border-left: 3px solid #b9c9a4; padding: 4px 0 4px 13px; font: 14px/1.7 Georgia,serif; max-height: 155px; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: #4c5547; }
+.companionActions { display: flex; flex-wrap: wrap; gap: 9px; padding: 8px 24px; }
+.readingWorkspace .readCheck { background: #faf4fb; color: #715276; border-color: #cdbbd0; }
+.readingWorkspace .readCheck.confirmed { opacity: 1; background: #e8efdf; color: #3f602d; border-color: #bcccae; }
+.dataNote { font-size: 10px; color: #687560; margin: 0; padding: 0 24px 15px; }
+.companionAnswer { padding: 4px 24px; }
+.companionAnswer section { padding: 19px 0; border-top: 1px solid #e2e6db; }
+.companionAnswer h3 { font-size: 14px; margin-bottom: 12px; color: #37552c; font-family: inherit; }
+.companionAnswer p { font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.citationCard { background: #f0f3e9; border-radius: 8px; padding: 16px; margin-top: 14px; }
+.citationCard h4 { font-size: 13px; font-family: inherit; line-height: 1.6; margin-bottom: 7px; }
+.citationCard a,.readingInterlude a { color: #635071; text-decoration: underline; text-underline-offset: 3px; }
+.citationCard p { font-size: 13px; margin: 10px 0; }
+.citationCard blockquote { border-left: 2px solid #bdc5b4; padding-left: 10px; color: #596650; font: italic 13px/1.7 Georgia,serif; overflow-wrap: anywhere; }
+.citationCard small { display: block; margin-top: 8px; font-size: 10px; color: #62705b; }
+.evidenceTag { display: inline-block; color: #6c5b33; font-size: 10px; background: #efe9d9; padding: 2px 7px; border-radius: 5px; }
+.companionAnswer .evidenceNotice { font-size: 11px; color: #6f745d; border-top: 1px solid #e2e6db; padding-top: 15px; }
+.answerHint { font-size: 13px; padding: 14px 24px; color: #6d765f; }
+.promptActions { display: flex; flex-wrap: wrap; gap: 5px; padding: 12px 20px; }
+.promptActions button { font-size: 10px; min-height: 34px; border: 0; background: transparent; }
+.sourceInput,.manualInput { padding: 17px 22px; border-top: 1px solid #d8dfce; font-size: 12px; }
+.sourceInput summary,.manualInput summary { cursor: pointer; color: #53674a; }
+.sourceInput p { font-size: 12px; margin: 14px 0; color: #66745d; }
+.readingWorkspace textarea,.readingWorkspace input:not([type=checkbox]):not([type=number]),.readingWorkspace select { width: 100%; max-width: 100%; background: #fffefb; border: 1px solid #bdc7b2; border-radius: 6px; padding: 10px; font: 13px/1.7 var(--gp-v2-font-ui); color: #36452c; }
+.readingWorkspace textarea { resize: vertical; }
+.manualInput label { display: block; margin: 14px 0; }
+.readingSettings { border: 1px solid #c7d0bc; background: #f3f6ec; border-radius: 9px; padding: 20px 25px; margin-bottom: 24px; max-width: 850px; }
+.readingSettings label { display: flex; align-items: center; gap: 10px; font-size: 13px; margin: 10px 0; }
+.readingSettings input[type=checkbox] { width: 16px; height: 16px; accent-color: #496538; }
+.readingSettings select { width: auto; }
+.readingSettings p { font-size: 12px; color: #64715b; margin: 4px 0 18px; }
+.readingMessage { padding: 12px 18px; background: #f3ecdd; border: 1px solid #d4c4a2; border-radius: 7px; color: #625434; font-size: 13px; overflow-wrap: anywhere; }
+.readingInterlude { background: #eee5ef; border: 1px solid #d2bed6; padding: 20px; margin: 20px; border-radius: 10px 24px 10px 10px; }
+.interludeTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.interludeTop span { color: #71527b; font-size: 10px; letter-spacing: 1px; }
+.readingInterlude .interludeTop button { border: 0; background: transparent; font-size: 20px; min-height: 30px; padding: 0 9px; }
+.readingInterlude h3 { font-size: 18px; line-height: 1.6; color: #5f3f68; margin-bottom: 12px; }
+.readingInterlude p { font-size: 13px; color: #55465c; }
+.readingInterlude a { font-size: 12px; }
+.readingInterlude small { display: block; font-size: 10px; color: #75637b; margin: 10px 0; }
+.readingInterlude > button { background: transparent; color: #6c4c74; border: 0; padding-left: 0; margin-top: 10px; }
+.handoffText { white-space: pre-wrap; overflow-wrap: anywhere; }
+.handoffForwarded { max-width: 700px; margin: 70px auto; padding: 35px; text-align: center; }
+@media(max-width:1000px) { .readingGrid { grid-template-columns: minmax(0,1fr) minmax(310px,.9fr); gap: 15px; } .readingWorkspace { padding: 25px 20px 40px; } .readingHeading { align-items: start; } .samplePaper { margin: 13px; padding: 22px; } .companionEmpty { padding: 25px; } }
+@media(max-width:760px) { .readingGrid { grid-template-columns: minmax(0,1fr); } .readingHeading { flex-direction: column; gap: 15px; } .grapeTopbar { padding: 14px 20px; } .grapeBrand small { display: none; } .grapeTopbar nav button { padding: 9px; } .readingWorkspace { padding: 23px 14px 40px; } .emptyReading { min-height: 360px; } .companionEmpty { min-height: 280px; } .samplePaper h2 { font-size: 24px; } }
+@media(prefers-reduced-motion:reduce) { .readingWorkspace * { transition: none !important; scroll-behavior: auto !important; } }
+
+.readingWorkspace .gp-pdf-zoom select { width: auto; padding: 6px 8px; }
+.readingInterlude blockquote { border-left: 2px solid #bdabc6; margin-top: 14px; padding-left: 12px; font: italic 13px/1.7 Georgia,serif; overflow-wrap: anywhere; }

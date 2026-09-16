@@ -25,6 +25,10 @@ dist-ssr
 
 # Build artifacts
 *.zip
+*.xpi
+.env
+.env.*
+!.env.example
 
 # Vite build artifacts
 .vite/
