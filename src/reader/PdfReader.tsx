@@ -4,12 +4,13 @@ import type { TextContent } from 'pdfjs-dist/types/src/display/api';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { boundsOfRects, normalizeSelectionText, rectangleFromPoints, selectTextBoxes, selectionAnchor, type Point, type Rect, type TextBox } from './selectionGeometry';
 import './PdfReader.css';
+import ReflowPage from './ReflowPage';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
 export type PdfSelection = { text: string; page: number; context: string; anchor: string };
 export type PdfDocumentInfo = { id: string; title: string; pages: number; references?: string };
-type PdfReaderProps = { file: File; onSelection: (selection: PdfSelection) => void; onDocument: (info: PdfDocumentInfo) => void };
+type PdfReaderProps = { file: File; onSelection: (selection: PdfSelection) => void; onDocument: (info: PdfDocumentInfo) => void; presentation?: 'pdf' | 'garden' };
 type SelectionMode = 'text' | 'box' | 'lasso';
 type LoadedDocument = { file: File; pdf: PDFDocumentProxy; info: PdfDocumentInfo };
 
@@ -39,7 +40,7 @@ function wordBoxes(layer: HTMLElement, origin: DOMRect): TextBox[] {
   return boxes;
 }
 
-export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
+export function PdfReader({ file, onSelection, onDocument, presentation = 'pdf' }: PdfReaderProps) {
   const [loaded, setLoaded] = useState<LoadedDocument | null>(null);
   const [page, setPage] = useState(1);
   const [zoom, setZoom] = useState(1);
@@ -83,7 +84,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
       try {
         const bytes = await file.arrayBuffer();
         if (cancelled) return;
-        // Hash before PDF.js transfers the input buffer to its local worker.
         const digest = await crypto.subtle.digest('SHA-256', bytes);
         if (cancelled) return;
         const id = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, '0')).join('');
@@ -94,7 +94,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
         setLoaded({ file, pdf, info });
         setLoading(false);
         callbacks.current.onDocument(info);
-        // Reference matching gets source bibliography text, never invented full text.
         let ending = '';
         for (let number = Math.max(1, pdf.numPages - 4); number <= pdf.numPages; number += 1) {
           if (cancelled) return;
@@ -107,7 +106,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
         if (heading && !cancelled) callbacks.current.onDocument({ ...info, references: ending.slice(heading.index, heading.index + 24000) });
       } catch (reason) {
         if (cancelled) return;
-        // Bibliography extraction is optional and must not hide a successfully opened PDF.
         if (task) {
           const pdf = await task.promise.catch(() => null);
           if (cancelled) return;
@@ -129,7 +127,7 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
   useEffect(() => {
     const element = scrollRef.current;
     if (!element) return;
-    const measure = () => setAvailableWidth(Math.max(240, element.clientWidth - 40));
+    const measure = () => { if (element.clientWidth) setAvailableWidth(Math.max(240, element.clientWidth - 40)); };
     measure();
     if (typeof ResizeObserver === 'undefined') {
       window.addEventListener('resize', measure);
@@ -145,7 +143,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
     let cancelled = false;
     let renderTask: RenderTask | undefined;
     let textLayer: TextLayer | undefined;
-    // New elements per render prevent an old cancelled task from drawing into a new page.
     const canvas = document.createElement('canvas');
     canvas.setAttribute('aria-hidden', 'true');
     const layer = document.createElement('div');
@@ -174,7 +171,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
         layer.style.setProperty('--total-scale-factor', String(scale));
         setSize({ width: viewport.width, height: viewport.height });
         renderTask = pdfPage.render({ canvas, viewport, transform: ratio === 1 ? undefined : [ratio, 0, 0, ratio, 0, 0] });
-        // Rendering can reject before the independent text extraction finishes.
         void renderTask.promise.catch(() => undefined);
         const content = await pdfPage.getTextContent();
         if (cancelled) return;
@@ -194,7 +190,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
       cancelled = true;
       renderTask?.cancel();
       textLayer?.cancel();
-      // Consume cancellation rejection even if getTextContent is still outstanding.
       void renderTask?.promise.catch(() => undefined);
       canvas.remove();
       layer.remove();
@@ -212,7 +207,6 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
     const context = normalizeSelectionText(pageText);
     const start = Math.max(0, approximateIndex - 4000);
     const anchor = selectionAnchor(page, normalized, rect, size);
-    // Clicking the confirmation button must not re-emit a still-highlighted PDF range.
     if (lastEmission.current === anchor) return;
     lastEmission.current = anchor;
     callbacks.current.onSelection({ text: normalized, page, context: context.slice(start, start + 16000), anchor });
@@ -220,7 +214,7 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
   }, [activeDocument, pageText, page, size]);
 
   const captureNativeSelection = useCallback(() => {
-    if (mode !== 'text' || !pageReady) return;
+    if (presentation !== 'pdf' || mode !== 'text' || !pageReady) return;
     const selection = window.getSelection();
     const host = textHostRef.current;
     const stage = stageRef.current;
@@ -229,7 +223,7 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
     if (!host.contains(range.startContainer) || !host.contains(range.endContainer)) return;
     const rect = range.getBoundingClientRect();
     emitSelection(selection.toString(), relativeRect(rect, stage.getBoundingClientRect()));
-  }, [mode, pageReady, emitSelection]);
+  }, [presentation, mode, pageReady, emitSelection]);
 
   useEffect(() => {
     const schedule = () => {
@@ -303,7 +297,7 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
   const drawnRect = mode === 'box' && drawing.length > 1 ? rectangleFromPoints(drawing[0], drawing[drawing.length - 1]) : null;
   return <section className="gp-pdf-reader" aria-label="PDF 阅读器">
     <div className="gp-pdf-toolbar">
-      <div className="gp-pdf-modes" role="group" aria-label="选择方式">
+      <div className="gp-pdf-modes" role="group" aria-label="选择方式" hidden={presentation !== 'pdf'}>
         {(['text', 'box', 'lasso'] as const).map(value => <button key={value} type="button" aria-pressed={mode === value}
           onClick={() => { setMode(value); cancelGesture(); }}>
           {value === 'text' ? '选文字' : value === 'box' ? '框选' : '随手圈'}
@@ -316,14 +310,15 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
           <span> / {activeDocument?.pdf.numPages ?? '…'} 页</span></label>
         <button type="button" aria-label="下一页" disabled={!activeDocument || page >= activeDocument.pdf.numPages} onClick={() => changePage(page + 1)}>›</button>
       </div>
-      <label className="gp-pdf-zoom">缩放 <select aria-label="PDF 缩放" value={zoom} onChange={event => setZoom(Number(event.target.value))}>
+      <label className="gp-pdf-zoom" hidden={presentation !== 'pdf'}>缩放 <select aria-label="PDF 缩放" value={zoom} onChange={event => setZoom(Number(event.target.value))}>
         <option value={1}>适合宽度</option><option value={1.25}>125%</option><option value={1.5}>150%</option><option value={2}>200%</option>
       </select></label>
     </div>
-    <p className="gp-pdf-hint">{mode === 'text' ? '拖动选中英文原文，让伴读从这一段开始。' : mode === 'box' ? '按住拖出一个方框，选择里面的文字。' : '按住鼠标随手画圈，松开后提取圈内文字。'}</p>
+    <p className="gp-pdf-hint">{presentation === 'garden' ? '美化模式与 PDF 共用页码、选段和伴读。随时切回原文核对。' : mode === 'text' ? '拖动选中英文原文，让伴读从这一段开始。' : mode === 'box' ? '按住拖出一个方框，选择里面的文字。' : '按住鼠标随手画圈，松开后提取圈内文字。'}</p>
     {loading && <p role="status" className="gp-pdf-status">正在打开 PDF…</p>}
     {error && <p role="alert" className="gp-pdf-error">{error}</p>}
-    <div className="gp-pdf-scroll" ref={scrollRef}>
+    {presentation === 'garden' && <ReflowPage text={pageText} title={activeDocument?.info.title || file.name} page={page} onSelect={text => emitSelection(text, {x:0,y:0,width:size.width,height:1})}/>} 
+    <div className="gp-pdf-scroll" ref={scrollRef} hidden={presentation !== 'pdf'}>
       <div ref={stageRef} className={`gp-pdf-page gp-pdf-mode-${mode}${pageReady ? '' : ' gp-pdf-page-loading'}`}
         style={{ width: size.width, height: size.height, display: activeDocument ? undefined : 'none' } as CSSProperties}
         onPointerDown={beginGesture} onPointerMove={moveGesture} onPointerUp={finishGesture} onPointerCancel={cancelGesture}
@@ -338,7 +333,7 @@ export function PdfReader({ file, onSelection, onDocument }: PdfReaderProps) {
     </div>
     {activeDocument && !pageReady && !error && <p className="gp-pdf-status" role="status">正在显示第 {page} 页…</p>}
     {notice && <p className="gp-pdf-notice" role="status">{notice}</p>}
-    {activeDocument && <div className="gp-pdf-fallback">
+    {activeDocument && <div className="gp-pdf-fallback" hidden={presentation !== 'pdf'}>
       <button type="button" aria-expanded={showText} onClick={() => setShowText(value => !value)}>{showText ? '收起纯文本' : '打开本页纯文本'}</button>
       {showText && <div>
         <p>可以用键盘选中下面的文字，再点击「用选中文字伴读」。PDF 的提取顺序有时与版面不同，请对照原页。</p>

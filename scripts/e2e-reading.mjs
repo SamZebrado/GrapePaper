@@ -7,10 +7,12 @@ function pdfFixture() {
   const stream = 'BT /F1 16 Tf 40 740 Td (Reading question one.) Tj 0 -40 Td (Methods change one variable.) Tj 310 0 Td (Adjacent column.) Tj -310 -40 Td (Results require interpretation.) Tj 0 -60 Td (References) Tj 0 -25 Td (A supplied source for this example.) Tj ET';
   const objects = [
     '<< /Type /Catalog /Pages 2 0 R >>',
-    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Pages /Kids [3 0 R 6 0 R] /Count 2 >>',
     '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
     `<< /Length ${Buffer.byteLength(stream)} >>\nstream\n${stream}\nendstream`,
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 7 0 R >>',
+    '<< /Length 58 >>\nstream\nBT /F1 16 Tf 40 740 Td (Second page for continuity.) Tj ET\nendstream',
   ];
   let data='%PDF-1.4\n'; const offsets=[0];
   objects.forEach((body,i)=>{offsets.push(Buffer.byteLength(data));data+=`${i+1} 0 obj\n${body}\nendobj\n`;});
@@ -38,6 +40,12 @@ try {
   await page.getByRole('status',{name:'阅读间奏'}).waitFor();
   assert.equal(await page.evaluate(()=>localStorage.getItem('grapepaper.reading.v1')),null,'default must not persist');
   await sample.first().click(); await checked.waitFor();
+  await page.getByRole('button',{name:'❧ 美化模式',exact:true}).click();
+  await page.getByRole('article',{name:'美化阅读第 1 页'}).waitFor();
+  await checked.waitFor();
+  await page.getByRole('button',{name:'伴读这一段',exact:true}).first().click();
+  await checked.waitFor(); // Same text is not counted twice across presentations.
+  await page.getByRole('button',{name:'PDF 原文',exact:true}).click();
   await page.getByRole('button',{name:'葡萄笔记',exact:true}).click();
   await page.getByRole('button',{name:'返回文献伴读',exact:true}).click();
   await checked.waitFor(); // switching workspaces preserves memory session
@@ -74,8 +82,27 @@ try {
   await page.mouse.up();
   await page.waitForFunction(()=>document.querySelector('.selectedPassage blockquote')?.textContent?.includes('Results require'));
   await check.click();
-  // Controlled API response tests UI wiring, not provider quality.
-  await page.route('**/api/companion',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({explanation:'测试响应：区分观察与解释。',argumentRole:'回到原文核对。',citations:[],stories:[],questions:['观察与解释有什么区别？']})}));
+  const selectedBefore=await page.locator('.selectedPassage blockquote').innerText();
+  await page.getByRole('button',{name:'下一页',exact:true}).click();
+  await page.getByLabel('页码',{exact:true}).fill('2');
+  await page.getByRole('button',{name:'❧ 美化模式',exact:true}).click();
+  await page.locator('.reflowText').filter({hasText:'Second page for continuity.'}).waitFor();
+  assert.equal(await page.locator('.selectedPassage blockquote').innerText(),selectedBefore);
+  await checked.waitFor();
+  await page.getByRole('button',{name:'伴读这一段',exact:true}).click();
+  await check.click();
+  await page.getByRole('button',{name:'PDF 原文',exact:true}).click();
+  assert.equal(await page.getByLabel('页码',{exact:true}).inputValue(),'2');
+  await checked.waitFor();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('grapepaper_document')),null,'reflow must not overwrite or save editor drafts');
+  // Controlled service and model responses test UI wiring, not provider quality.
+  await page.route('https://companion.example/api/health',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({status:'ok',configured:true})}));
+  await page.getByRole('button',{name:'阅读偏好',exact:true}).click();
+  await page.getByLabel('伴读服务地址').fill('https://companion.example');
+  await page.getByRole('button',{name:'测试并连接',exact:true}).click();
+  await page.getByText('已连接。选段会在你点击生成或开启自动伴读后发送。',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'阅读偏好',exact:true}).click();
+  await page.route('https://companion.example/api/companion',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({explanation:'测试响应：区分观察与解释。',argumentRole:'回到原文核对。',citations:[],stories:[],questions:['观察与解释有什么区别？']})}));
   await page.getByRole('button',{name:'生成中文伴读',exact:true}).click();
   await page.getByText('测试响应：区分观察与解释。',{exact:true}).waitFor();
   await page.setViewportSize({width:640,height:1000});
@@ -84,11 +111,11 @@ try {
   // An additional Zotero launch feeds the already-open page, without storage.
   const handoff={version:1,source:'zotero',selection:{text:'A fresh Zotero selection.',page:2},document:{title:'Zotero source'}};
   const other=await context.newPage();
-  await other.goto(base+'/#grapepaper='+encodeURIComponent(JSON.stringify(handoff)));
+  await other.goto(base.replace(/\/$/,'')+'/#grapepaper='+encodeURIComponent(JSON.stringify(handoff)));
   await other.getByText('选段已送到打开的伴读窗口。',{exact:true}).waitFor();
   await page.waitForFunction(()=>document.querySelector('.selectedPassage blockquote')?.textContent==='A fresh Zotero selection.');
   assert.equal(new URL(other.url()).hash,'','handoff removed before render');
   assert.equal(await page.evaluate(()=>localStorage.getItem('grapepaper.reading.v1')),null);
   assert.deepEqual(errors,[],'browser runtime errors');
-  console.log('PASS: demo, explicit confirmation, memory/persistence, workspace return, PDF text/box/lasso, AI response, responsive layout, Zotero cross-tab handoff');
+  console.log('PASS: demo, explicit confirmation, memory/persistence, workspace return, PDF text/box/lasso, reflow modes and page continuity, no draft overwrite, custom AI connection and response, responsive layout, Zotero cross-tab handoff');
 } finally { await browser.close(); }

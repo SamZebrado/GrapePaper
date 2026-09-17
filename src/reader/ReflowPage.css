@@ -1,0 +1,19 @@
+.reflowPage { padding: 30px clamp(16px, 3vw, 38px); background: var(--gp-v2-bg, #eff0e7); max-height: min(78vh, 1100px); min-height: 420px; overflow: auto; overscroll-behavior: contain; }
+.reflowPage header { text-align: center; padding: 5px 8px 28px; }
+.reflowPage header span { font-size: 10px; letter-spacing: 1.4px; color: #617151; }
+.reflowPage h2 { font: 24px/1.45 var(--gp-font-serif, Georgia, serif); color: #33472d; overflow-wrap: anywhere; margin: 14px 0; }
+.reflowPage header p, .reflowPage footer, .reflowEmpty { font-size: 12px; color: #5d6b54; }
+.reflowPage .reflowSlab { margin-bottom: 0; padding: 26px; }
+.reflowPage .reflowSlab:hover { transform: none; }
+.reflowNumber { display: block; font-size: 10px; letter-spacing: 1.8px; color: #65745a; margin-bottom: 12px; }
+.reflowPage .reflowText { font: 17px/1.95 var(--gp-font-serif, Georgia, serif); color: #303b2d; overflow-wrap: anywhere; margin: 0 0 20px; user-select: text; }
+.reflowText::selection { background: #cddaba; }
+.readingWorkspace .reflowLeaf { border-radius: 8px 22px 8px 22px; background: #e3ead7; border-color: #a8b798; font-size: 12px; padding: 9px 17px; }
+.reflowLeaf span { font-size: 18px; vertical-align: middle; margin-right: 5px; }
+.reflowPage footer { padding-top: 30px; line-height: 1.7; }
+.readingPresentation { display: flex; align-items: center; gap: 6px; padding: 11px 16px; background: #fafbf6; border-bottom: 1px solid #d5ddcd; flex-wrap: wrap; }
+.readingPresentation button { min-height: 34px; font-size: 12px; }
+.readingPresentation button[aria-pressed=true] { background: #e4eadb; border-color: #81936e; color: #334a28; }
+.readingPresentation small { margin-left: auto; color: #68765d; font-size: 11px; }
+.gp-pdf-scroll[hidden], .gp-pdf-modes[hidden], .gp-pdf-fallback[hidden] { display: none; }
+@media (max-width: 760px) { .reflowPage { padding: 22px 15px; } .reflowPage .reflowSlab { padding: 20px; } .readingPresentation small { width: 100%; margin: 4px 0 0; } }

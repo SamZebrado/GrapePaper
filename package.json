@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/copy-notices.mjs",
+    "build:pages": "tsc -b && vite build --mode pages && node scripts/prepare-pages.mjs",
+    "preview:pages": "node scripts/serve-pages.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",

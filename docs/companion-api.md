@@ -28,6 +28,19 @@ The service listens only on `127.0.0.1:8787`. The reader calls `POST /api/compan
 
 No request texts, responses, keys, or reading progress are logged or stored by this service. When an external provider is configured, the selected text, supplied context, and reference excerpts are sent to that provider. With optional Crossref lookup enabled, up to three reference titles or bibliography snippets are sent to Crossref; PDF files are not uploaded by this service. Provider retention is outside this local service's control.
 
+## Use from the public preview
+
+The Pages preview has no model backend of its own. Start the same local service with the preview origin explicitly allowed:
+
+```bash
+export GRAPEPAPER_ALLOWED_ORIGINS='https://samzebrado.github.io'
+export GRAPEPAPER_API_BASE_URL='http://localhost:11434/v1'
+export GRAPEPAPER_MODEL='your-installed-model'
+node server/index.mjs
+```
+
+Open **连接 AI** in the preview, enter `http://127.0.0.1:8787`, and choose **测试并连接**. This checks `/api/health` without sending article text. It verifies service configuration, not provider credentials or model quality. The address stays in memory for this page session. A browser may require local-network permission; if blocked, run the web reader locally or use prompt export / note import. For a remote HTTPS service, configure a protected gateway implementing the same endpoints and CORS policy; the bundled server remains loopback-only. The browser sends no cookies to a custom endpoint.
+
 ## Request
 
 ```json

@@ -18,12 +18,19 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint:reading
       - run: npm run build
+      - run: npm run build:pages
+      - name: Published preview matches source
+        run: git diff --exit-code -- docs/index.html docs/assets docs/favicon.svg docs/icons.svg docs/PDFJS-LICENSE.txt docs/THIRD_PARTY_NOTICES.md
       - run: npm run build:zotero
       - run: npx playwright install --with-deps chromium
       - name: Browser reading flow
         run: |
           npm run dev -- --host 127.0.0.1 > /tmp/grapepaper-vite.log 2>&1 &
           npm run test:e2e
+      - name: Built Pages reading flow
+        run: |
+          npm run preview:pages > /tmp/grapepaper-pages.log 2>&1 &
+          GRAPEPAPER_TEST_URL=http://127.0.0.1:4173/GrapePaper/ npm run test:e2e
       - uses: actions/upload-artifact@v4
         with:
           name: grapepaper-zotero-experimental

@@ -20,7 +20,7 @@
 .readingWorkspace button:disabled { opacity: .6; cursor: default; }
 .readingWorkspace .primary { color: #fffdf4; background: #3f5b35; border-color: #3f5b35; }
 .readingWorkspace .primary:hover:not(:disabled) { background: #2e4727; }
-.readerActions { display: flex; gap: 10px; flex-shrink: 0; }
+.readerActions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
 .readingGrid { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(340px,1fr); gap: 25px; align-items: start; }
 .paperColumn,.companionColumn { min-width: 0; border: 1px solid #d5ddcd; border-radius: 12px; overflow: hidden; background: #fbfcf7; }
 .paperColumn { background: #edf0e7; }
@@ -93,9 +93,20 @@
 .readingInterlude > button { background: transparent; color: #6c4c74; border: 0; padding-left: 0; margin-top: 10px; }
 .handoffText { white-space: pre-wrap; overflow-wrap: anywhere; }
 .handoffForwarded { max-width: 700px; margin: 70px auto; padding: 35px; text-align: center; }
+.handoffText { white-space: pre-wrap; overflow-wrap: anywhere; }
+.handoffForwarded { max-width: 700px; margin: 70px auto; padding: 35px; text-align: center; }
 @media(max-width:1000px) { .readingGrid { grid-template-columns: minmax(0,1fr) minmax(310px,.9fr); gap: 15px; } .readingWorkspace { padding: 25px 20px 40px; } .readingHeading { align-items: start; } .samplePaper { margin: 13px; padding: 22px; } .companionEmpty { padding: 25px; } }
 @media(max-width:760px) { .readingGrid { grid-template-columns: minmax(0,1fr); } .readingHeading { flex-direction: column; gap: 15px; } .grapeTopbar { padding: 14px 20px; } .grapeBrand small { display: none; } .grapeTopbar nav button { padding: 9px; } .readingWorkspace { padding: 23px 14px 40px; } .emptyReading { min-height: 360px; } .companionEmpty { min-height: 280px; } .samplePaper h2 { font-size: 24px; } }
 @media(prefers-reduced-motion:reduce) { .readingWorkspace * { transition: none !important; scroll-behavior: auto !important; } }
 
 .readingWorkspace .gp-pdf-zoom select { width: auto; padding: 6px 8px; }
 .readingInterlude blockquote { border-left: 2px solid #bdabc6; margin-top: 14px; padding-left: 12px; font: italic 13px/1.7 Georgia,serif; overflow-wrap: anywhere; }
+.serviceConnection { padding-bottom: 22px; margin-bottom: 22px; border-bottom: 1px solid #cbd5c1; }
+.serviceConnection h3 { font-size: 17px; color: #3c5532; }
+.serviceConnection label { flex-wrap: wrap; }
+.serviceConnection small { display: block; font-size: 11px; color: #5a6b50; margin-top: 14px; overflow-wrap: anywhere; line-height: 1.8; }
+.serviceButtons { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.serviceButtons a { color: #61456d; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.serviceBanner { display: flex; gap: 12px; align-items: center; font-size: 12px; line-height: 1.7; padding: 14px 20px; color: #625532; background: #f5efdf; border-bottom: 1px solid #e0d7bf; }
+.serviceBanner button { flex-shrink: 0; }
+@media(max-width:430px) { .grapeTopbar { gap: 8px; padding: 12px 14px; } .grapeBrand { font-size: 20px; gap: 6px; } .grapeBrand svg { width: 26px; } .grapeTopbar nav { gap: 4px; } .grapeTopbar nav button { font-size: 12px; padding: 8px; white-space: nowrap; } }
