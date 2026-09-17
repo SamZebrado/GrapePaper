@@ -2,6 +2,12 @@
 
 **葡萄伴读**：保留英文原文，用中文梳理论证、追溯引用实验，再偶尔遇到一张文献故事卡。网页阅读器与实验版 Zotero 插件共享伴读流程。原有葡萄笔记编辑器保留在「葡萄笔记」。
 
+**[打开网页预览 →](https://samzebrado.github.io/GrapePaper/)**
+
+拖入 PDF 即可阅读。点 **❧ 美化模式**，当前页文字会使用原项目的石板与葡萄藤排版；切回 **PDF 原文** 查看图表。两种模式共享页码、伴读和阅读确认，不会把 PDF 写入笔记草稿。原有编辑器仍可从顶部「葡萄笔记」进入。
+
+网页预览的 PDF、圈选、确认、间奏、提示词和 JSON 导入可直接使用。**实时 AI 需点「连接 AI」接入自己的伴读服务**；预览不包含公共模型额度。美化模式按文字层顺序重排，不保证还原分栏、公式与图表。
+
 ## 最小操作
 
 需要 **Node.js 22.13+（推荐 Node 24）**，以及支持 PDF.js 的现代桌面浏览器。
@@ -36,6 +42,12 @@ AI 只接收明确提交的选段、当前页上下文和提供的来源材料�
 
 [配置、输入输出格式与来源范围](docs/companion-api.md)
 
+## GitHub Pages 预览
+
+Pages 设置使用 `main` 分支的 `/docs`。更新代码后运行 `npm run build:pages`，一并提交生成的 `docs/index.html`、`docs/assets/`、图标与许可文件即可更新预览。构建保留 `docs` 中的原有文档，资源路径使用 `/GrapePaper/`。不要手工修改生成文件。
+
+Pages 只提供静态文件。用预览连接本机模型服务时，按[配置说明](docs/companion-api.md#use-from-the-public-preview)允许预览网页的 origin，再在网页中填 `http://127.0.0.1:8787`。浏览器可能询问本地网络权限；无法连接时仍可复制伴读提示词或导入笔记。
+
 ## Zotero 插件
 
 ```bash
@@ -69,6 +81,7 @@ npm run test:all      # 网页逻辑 + 本地服务 + Zotero 桥接
 npm run typecheck
 npm run lint:reading # 本轮阅读器代码；旧编辑器的 lint 债务仍保留
 npm run build
+npm run build:pages  # 生成绑定 /docs 的在线预览
 npm run build:zotero
 npm run test:e2e     # 需先启动 npm run dev，并安装 Playwright Chromium
 ```

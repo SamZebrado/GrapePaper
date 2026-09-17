@@ -2,6 +2,9 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { companionPrompt, companionRequest, parseReply, type CompanionReply, type PaperInfo, type Passage, type SourceInfo, type Story, type ZoteroHandoff } from './protocol';
 import { confirmPassage, digest, emptySession, parseProgress, passageIdentity, PROGRESS_KEY, type ProgressData } from './session';
 import './ReadingWorkspace.css';
+import ReflowPage from './ReflowPage';
+import ServiceConnection from './ServiceConnection';
+import { DEFAULT_COMPANION_ENDPOINT } from './serviceConnection';
 
 const PdfReader = lazy(() => import('./PdfReader'));
 const demo = [
@@ -14,6 +17,8 @@ interface Props { handoff?: ZoteroHandoff | null }
 
 export default function ReadingWorkspace({ handoff }: Props) {
   const [file, setFile] = useState<File | null>(null);
+  const [presentation, setPresentation] = useState<'pdf' | 'garden'>('pdf');
+  const [endpoint, setEndpoint] = useState(DEFAULT_COMPANION_ENDPOINT);
   const [paper, setPaper] = useState<PaperInfo | null>(null);
   const paperRef = useRef<PaperInfo | null>(null);
   const [isDemo, setIsDemo] = useState(false);
@@ -81,11 +86,12 @@ export default function ReadingWorkspace({ handoff }: Props) {
   }, [resetSelection, updateSources]);
 
   const explain = useCallback(async (passage: Passage, doc: PaperInfo, sourceText: string, metadata: SourceInfo) => {
+    if (!endpoint) { setSettingsOpen(true); setMessage('连接 AI 后即可生成中文伴读。也可以复制提示词到常用 AI，或导入已有伴读。'); return; }
     request.current?.abort(); const controller = new AbortController(); request.current = controller;
     const version = generation.current; setBusy(true); setMessage(''); setReply(null);
     const timeout = setTimeout(() => controller.abort(), 65000);
     try {
-      const response = await fetch('/api/companion', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(companionRequest(doc, passage, sourceText, metadata)), signal: controller.signal });
+      const response = await fetch(endpoint, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(companionRequest(doc, passage, sourceText, metadata)), signal: controller.signal });
       const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.error?.message || '伴读服务暂不可用。可先复制伴读提示词，在常用 AI 中阅读。');
       const parsed = parseReply(data);
@@ -96,7 +102,7 @@ export default function ReadingWorkspace({ handoff }: Props) {
       clearTimeout(timeout);
       if (version === generation.current && request.current === controller) setBusy(false);
     }
-  }, []);
+  }, [endpoint]);
 
   const selectPassage = useCallback((passage: Passage) => {
     const doc = paperRef.current;
@@ -180,7 +186,6 @@ export default function ReadingWorkspace({ handoff }: Props) {
     try {
       if (candidate.size > 256000) throw new Error('伴读 JSON 需小于 256 KB。');
       const parsed = parseReply(JSON.parse(await candidate.text()));
-      // Imported claims are user-supplied and cannot self-certify verification.
       parsed.evidenceNotice = '导入的伴读笔记，来源与摘录需自行核对。';
       parsed.citations.forEach(c => { c.evidence = 'model-unverified'; });
       parsed.stories.forEach(s => { s.evidence = 'model-unverified'; });
@@ -191,15 +196,16 @@ export default function ReadingWorkspace({ handoff }: Props) {
   return <main className="readingWorkspace" lang="zh-CN">
     <div className="readingHeading">
       <div><span className="eyebrow">READ AT YOUR OWN PACE</span><h1>读懂一段，再走一小步。</h1><p>英文原文在左，中文伴读在旁。圈选、理解，然后轻轻点一个对号。</p></div>
-      <div className="readerActions"><button className="primary" onClick={() => fileInput.current?.click()}>打开 PDF</button><button aria-expanded={settingsOpen} onClick={() => setSettingsOpen(!settingsOpen)}>阅读偏好</button></div>
+      <div className="readerActions"><button className="primary" onClick={() => fileInput.current?.click()}>打开 PDF</button><button aria-expanded={settingsOpen} onClick={() => setSettingsOpen(!settingsOpen)}>阅读偏好</button><button onClick={() => setSettingsOpen(true)}>{endpoint ? 'AI 连接' : '连接 AI'}</button></div>
     </div>
     <input ref={fileInput} type="file" accept=".pdf,application/pdf" hidden onChange={event => { openPdf(event.target.files?.[0]); event.target.value = ''; }}/>
     <input ref={replyInput} type="file" accept=".json,application/json" hidden onChange={event => { void importReply(event.target.files?.[0]); event.target.value = ''; }}/>
     {settingsOpen && <section className="readingSettings" aria-label="阅读偏好">
+      <ServiceConnection endpoint={endpoint} onConnect={value => { generation.current++; request.current?.abort(); request.current=null; setBusy(false); setEndpoint(value); if(!value) setAutomatic(false); }}/>
       <label><input type="checkbox" checked={remember} onChange={e => toggleRemember(e.target.checked)}/>在这台设备记住阅读标记</label>
       <p>默认只在本次阅读中计数。不显示全文完成率；关闭保存时，会删除以前保存的标记。</p>
       <label>阅读间奏 <select value={cadence} onChange={e => { setCadence(Number(e.target.value)); setInterlude(null); }}><option value={3}>每确认 3 段</option><option value={5}>每确认 5 段</option><option value={8}>每确认 8 段</option><option value={0}>关闭，安静阅读</option></select></label>
-      <label><input type="checkbox" checked={automatic} onChange={e => setAutomatic(e.target.checked)}/>圈选后自动生成 AI 伴读</label>
+      <label><input type="checkbox" checked={automatic} disabled={!endpoint} onChange={e => setAutomatic(e.target.checked)}/>圈选后自动生成 AI 伴读</label>
       <p>开启后，将选段、当前页上下文和参考文献发送到你配置的伴读服务；PDF 文件留在本机。未配置时可复制提示词或导入笔记。</p>
       <button onClick={() => { const saved = saveProgress({version:1,documents:{}}); setInterlude(null); setMessage(saved ? '阅读标记已清空。' : '本次阅读标记已清空，但无法更新以前保存的标记。请在浏览器网站数据中清除旧标记。'); }}>清空阅读标记</button>
     </section>}
@@ -207,7 +213,8 @@ export default function ReadingWorkspace({ handoff }: Props) {
     <div className="readingGrid">
       <section className="paperColumn" aria-label="英文原文">
         <div className="columnHeading"><span>01 / ORIGINAL</span><span>{paper ? paper.title : '从一篇感兴趣的文章开始'}</span></div>
-        {file ? <Suspense fallback={<div className="emptyReading">正在加载 PDF 阅读器…</div>}><PdfReader file={file} onSelection={selectPassage} onDocument={onDocument}/></Suspense> : isDemo ? <article className="samplePaper" onMouseUp={() => {
+        <div className="readingPresentation" role="group" aria-label="阅读模式"><button aria-pressed={presentation==='pdf'} onClick={() => setPresentation('pdf')}>PDF 原文</button><button aria-pressed={presentation==='garden'} onClick={() => setPresentation('garden')}>❧ 美化模式</button><small>同一篇文章 · 随时切换</small></div>
+        {file ? <Suspense fallback={<div className="emptyReading">正在加载 PDF 阅读器…</div>}><PdfReader file={file} presentation={presentation} onSelection={selectPassage} onDocument={onDocument}/></Suspense> : presentation==='garden' && paper && (isDemo || selection) ? <ReflowPage title={paper.title} page={selection?.page || 1} text={isDemo ? demo.map(x=>x.text).join('\n\n') : selection!.text} onSelect={text => selectPassage({text,page:selection?.page || 1,context:isDemo ? demo.map(x=>x.text).join('\n') : selection!.context,anchor:''})}/> : isDemo ? <article className="samplePaper" onMouseUp={() => {
           const selected = window.getSelection(); const parent = selected?.anchorNode?.parentElement;
           if (selected && parent?.closest('.samplePaper') && selected.toString().trim()) selectPassage({text:selected.toString(),page:1,context:demo.map(x=>x.text).join('\n'),anchor:''});
         }}><span className="sampleTag">原创教学示例 · 非发表论文</span><h2>The paragraph and the paper</h2><p className="sampleSubtitle">A small companion for reading research</p>{demo.map((part,i) => <section key={part.text}><h3>{['The question','The experiment','The interpretation'][i]}</h3><p>{part.text}</p><button onClick={() => selectPassage({text:part.text,page:1,context:demo.map(x=>x.text).join('\n'),anchor:''})}>伴读这一段 →</button></section>)}</article> : paper && selection ? <article className="samplePaper"><span className="sampleTag">{paper.id.startsWith('zotero:') ? '来自 Zotero 的选段' : '粘贴的选段'} · 第 {selection.page} 页</span><h2>{paper.title}</h2><p className="handoffText">{selection.text}</p><p className="muted">完整 PDF 仍在原阅读器中。可继续在那里圈选，或在这里打开 PDF。</p></article> : <div className="emptyReading" onDragOver={e => e.preventDefault()} onDrop={e => {e.preventDefault();openPdf(e.dataTransfer.files[0]);}}>
@@ -224,6 +231,7 @@ export default function ReadingWorkspace({ handoff }: Props) {
       </section>
       <aside className="companionColumn" aria-label="中文伴读">
         <div className="columnHeading"><span>02 / COMPANION</span><span className="memoryStatus">{remember ? '本机记忆' : '随读随走'}</span></div>
+        {!endpoint && <div className="serviceBanner"><span>AI 尚未连接。示例可直接试读；自己的论文可连接 AI，或使用提示词与笔记导入。</span><button onClick={() => setSettingsOpen(true)}>连接 AI</button></div>}
         {!selection ? <div className="companionEmpty"><span className="leafMark" aria-hidden="true">❧</span><h2>把难懂的地方，交给这一片叶子。</h2><p>选一段原文后，在这里梳理思路、追溯引用、核对实验。看完点 ✓，才确认读过。</p><div className="readingSteps"><span>圈选</span><span>伴读</span><span>✓ 确认</span><span>偶遇故事</span></div><p className="muted">没有全文打卡清单，也不用追赶进度。</p></div> : <>
           <div className="selectedPassage"><div><strong>当前选段</strong><span>第 {selection.page} 页</span></div><blockquote>{selection.text}</blockquote></div>
           <div className="companionActions"><button className="primary" disabled={busy || !paper || isDemo} onClick={() => paper && void explain(selection, paper, sources, sourceInfo)}>{busy ? '正在梳理论证…' : '生成中文伴读'}</button><button className={confirmed ? 'readCheck confirmed' : 'readCheck'} aria-pressed={confirmed} disabled={!selectionKey || confirmed} onClick={markRead}>{confirmed ? '✓ 已确认读过' : '✓ 我读过了'}</button></div>
