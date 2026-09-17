@@ -20,7 +20,7 @@ jobs:
       - run: npm run build:pages
       - name: Commit generated Pages files
         run: |
-          if git diff --quiet -- docs; then
+          if [ -z "$(git status --porcelain -- docs)" ]; then
             echo 'Generated docs already current.'
             exit 0
           fi
