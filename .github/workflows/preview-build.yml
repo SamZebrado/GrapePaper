@@ -1,11 +1,11 @@
-name: Temporary preview build
+name: Public preview smoke test
 on:
   push:
     branches: [grapepaper-preview-build]
 permissions:
-  contents: write
+  contents: read
 jobs:
-  build:
+  public-e2e:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,18 +14,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npm run test:all
-      - run: npm run typecheck
-      - run: npm run lint:reading
-      - run: npm run build:pages
-      - name: Commit generated Pages files
-        run: |
-          if [ -z "$(git status --porcelain -- docs)" ]; then
-            echo 'Generated docs already current.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs
-          git commit -m 'Temporary generated Pages preview'
-          git push origin HEAD:grapepaper-preview-build
+      - run: npx playwright install --with-deps chromium
+      - name: Test deployed GitHub Pages
+        env:
+          GRAPEPAPER_TEST_URL: https://samzebrado.github.io/GrapePaper/
+        run: npm run test:e2e
