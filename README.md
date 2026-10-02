@@ -30,6 +30,8 @@ npm run dev
 
 选择含 `[1]` 或 `Smith (2020)` 等引用的选段，在「引用证据链」中核对书目，明确选择来源身份，再确认对应关系并导入本地来源 PDF / 文本。重复作者年份与多条引用保留候选，一次检查一篇；不认识的格式不猜测。Crossref 元数据查询需服务端显式启用，离线也可手动确认书目并使用本地来源。
 
+静态网页的元数据查询复用现有「连接 AI」入口，目前只有服务健康检查报告模型已配置时才能连接。仅启用 Crossref、未配置模型的服务可独立处理 `mode: "resolve"` API 请求，但不能从静态网页连接；此时使用离线书目确认与本地来源流程。连接成功也不证明模型密钥有效。
+
 本地词汇检索定位最多三条候选短摘录；可查看精确提取原文、页码与字符定位。**候选相关性不等于支持结论，DOI 身份不等于证据强度。** 检查并勾选摘录后，可显式请求已连接的模型解释。每项模型判断标明支持 / 相矛盾 / 仅提及 / 证据不足及对应摘录，始终与来源文字分开。
 
 来源文件与全文索引只在内存中；不上传 PDF、不自动保存原文。生成证据解释仅发送当前选段、选中书目、来源身份与勾选的短摘录及定位。显式导出的证据 JSON 含选段与摘录，请注意私人材料。重新导入会隔离旧解释；需重新提供字节相同的本地来源并核对提取定位，随后重新分析。改换引用、来源或检索输入会使旧解释失效。
@@ -101,8 +103,8 @@ CI 执行上述构建和测试，并上传构建出的实验版 XPI。自动模�
 
 技术栈：React 18、TypeScript、Vite、PDF.js、Zustand、TipTap；MIT 许可。PDF.js 及其衍生 CSS 遵循 Apache-2.0，[第三方说明](THIRD_PARTY_NOTICES.md)。
 
-下一步是审计引用到来源证据的可追溯性与竞品能力；尚未实现自动全文来源获取或内嵌伴读。
+Evidence Trail V1 已提供本地 Citation → Source → Evidence → Boundary 循环；竞品测试不是前置条件。自动全文获取、OCR 与真实模型科学判断质量仍未验证或实现，不把候选摘录或模型解释称为独立事实核查。
 
 ---
 
-**English** — GrapePaper pairs original PDF text with a Chinese reading companion. Select text, draw a rectangle or lasso, inspect the explanation and citations, then explicitly check the passage as read. Reading markers stay in memory unless local persistence is enabled. Occasional sourced story cards or reflection prompts add variety without a document completion score. A local server connects to an OpenAI-compatible model; API keys remain server-side and real inference remains unverified. The experimental Zotero bridge declares 7.0–10.0.* compatibility and transfers a selected excerpt into the same web reader. Real desktop smoke tested on Zotero 10.0.4 on macOS; 7/8 were not run. Full-text retrieval, live news search and OCR are not yet included. See the setup and evidence limits above.
+**English** — GrapePaper pairs original PDF text with a Chinese reading companion. Select text, draw a rectangle or lasso, inspect the explanation and citations, then explicitly check the passage as read. Reading markers stay in memory unless local persistence is enabled. Occasional sourced story cards or reflection prompts add variety without a document completion score. A local server connects to an OpenAI-compatible model; API keys remain server-side and real inference remains unverified. The experimental Zotero bridge declares 7.0–10.0.* compatibility and transfers a selected excerpt into the same web reader. Real desktop smoke tested on Zotero 10.0.4 on macOS; 7/8 were not run. Evidence Trail locates exact excerpts in user-supplied local sources and keeps model interpretation separate. Automatic external full-text acquisition, live news search and OCR are not included. See the setup, metadata-connection limitation and evidence boundaries above.

@@ -12,6 +12,8 @@ A local, inspectable **Citation → Source → Evidence → Boundary** loop, not
 6. Invoke the connected companion explicitly. Source text and model interpretation remain visually separate; each interpreted aspect carries its own relation and excerpt references.
 7. Explicitly export a JSON record if needed. Imported records are unverified, with prior interpretation quarantined. Reattach identical local source bytes/text and matching extraction locators before generating fresh interpretation.
 
+Static Pages reuses the existing AI-service connection control, which currently requires `/api/health` to report a configured model. The server can process `mode: "resolve"` independently with Crossref enabled and no model configured, but that metadata-only endpoint is not connectable through the static UI in V1. Use the manual/offline bibliography and local-source loop in that case. A configured health response does not establish that model credentials work.
+
 ## Seven distinct boundaries
 
 - Current paper only.
