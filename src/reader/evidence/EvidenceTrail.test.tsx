@@ -1,5 +1,5 @@
 import { webcrypto } from 'node:crypto';
-import { setImmediate as immediate } from 'node:timers';
+import { setTimeout as realTimeout, clearTimeout as realClearTimeout } from 'node:timers';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import EvidenceTrail from './EvidenceTrail';
@@ -107,14 +107,24 @@ it('rejects an imported record for repeated text at a different geometry anchor'
 });
 it('does not accept a post-timeout response from a provider ignoring abort', async () => {
   let resolve!: (response: Response) => void; let body!: EvidenceModelRequest;
-  vi.stubGlobal('fetch', vi.fn((_url: string, options: RequestInit) => { body = JSON.parse(options.body as string); return new Promise<Response>(done => { resolve = done; }); }));
+  let requestArrived!: () => void;
+  const arrival = new Promise<void>(done => { requestArrived = done; });
+  let requestSignal: AbortSignal | null | undefined;
+  vi.stubGlobal('fetch', vi.fn((_url: string, options: RequestInit) => { body = JSON.parse(options.body as string); requestSignal = options.signal; return new Promise<Response>(done => { resolve = done; requestArrived(); }); }));
   render(<EvidenceTrail passage={passage} bibliographyText={bibliography} endpoint="https://companion.example/api/companion"/>);
   await chooseSource();
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   fireEvent.click(screen.getByRole('button', { name: '仅根据勾选摘录生成解释' }));
-  await act(async () => { for (let attempt = 0; !body && attempt < 30; attempt++) await new Promise<void>(done => immediate(done)); });
+  // Native WebCrypto does not finish after a predictable number of event-loop turns.
+  // Wait for the actual request without advancing its deliberately fake 65s timer.
+  await act(async () => {
+    let watchdog: ReturnType<typeof realTimeout> | undefined;
+    try {
+      await Promise.race([arrival, new Promise<void>((_done, reject) => { watchdog = realTimeout(() => reject(new Error('Mock evidence request did not arrive.')), 3000); })]);
+    } finally { realClearTimeout(watchdog); }
+  });
   expect(body).toBeDefined();
-  await act(async () => { await vi.advanceTimersByTimeAsync(65001); resolve(new Response(JSON.stringify({ mode: 'evidence', assessment: assessment(body) }))); });
+  await act(async () => { await vi.advanceTimersByTimeAsync(65001); expect(requestSignal?.aborted).toBe(true); resolve(new Response(JSON.stringify({ mode: 'evidence', assessment: assessment(body) }))); });
   vi.useRealTimers();
   await screen.findByText('操作已取消或超时；迟到结果未采纳。');
   expect(screen.queryByText('The result does not establish universal superiority.')).not.toBeInTheDocument();
