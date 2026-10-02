@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bibliographyCandidate, detectCitations, matchCitation, normalizeDoi, parseBibliography } from './citations';
+import { assertCanonicalBibliographyEntry, bibliographyCandidate, detectCitations, matchCitation, normalizeDoi, parseBibliography } from './citations';
 
 describe('Evidence Trail conservative citation parser', () => {
   it('expands bounded numeric ranges and retains source offsets', () => {
@@ -63,5 +63,13 @@ describe('Evidence Trail conservative citation parser', () => {
     const alreadyClipped = 'x'.repeat(24000 - tail.length) + tail;
     expect(alreadyClipped).toHaveLength(24000);
     expect(parseBibliography(alreadyClipped)).toEqual([]);
+  });
+  it('re-derives every semantic field from raw without prescribing opaque IDs', () => {
+    const [entry] = parseBibliography('[2] Smith, J. (2020a). Real paper. doi:10.1234/A');
+    expect(() => assertCanonicalBibliographyEntry({ ...entry, id: 'opaque-external-id' })).not.toThrow();
+    for (const patch of [{ label: '1' }, { authorKey: 'jones' }, { year: '2021' }, { doi: '10.1234/b' }, { title: 'Forged paper' }, { doi: undefined }]) {
+      expect(() => assertCanonicalBibliographyEntry({ ...entry, ...patch })).toThrow('provenance');
+    }
+    expect(() => assertCanonicalBibliographyEntry({ ...entry, raw: entry.raw + '\n[3] Jones, J. (2021). Another.' })).toThrow('provenance');
   });
 });

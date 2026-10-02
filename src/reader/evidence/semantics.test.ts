@@ -95,7 +95,8 @@ it('cannot invent exact DOI provenance for a linked entry without that DOI', asy
   const linked = { ...record, bibliography: [entry], resolution: { candidates: [candidate], selectedCandidateId: null, selectedBibliographyEntryId: entry.id, ambiguity: 'single' as const } };
   await expect(deriveEvidenceState(linked)).rejects.toThrow('provenance');
   await expect(deriveEvidenceState({ ...linked, bibliography: [{ ...entry, doi: '10.1234/other' }] })).rejects.toThrow('provenance');
-  expect(await deriveEvidenceState({ ...linked, bibliography: [{ ...entry, doi: candidate.doi }] })).toBe('BIBLIOGRAPHY_MATCH_ONLY');
+  const validEntry = { ...parseBibliography(entry.raw + ` doi:${candidate.doi}`)[0], id: entry.id };
+  expect(await deriveEvidenceState({ ...linked, bibliography: [validEntry] })).toBe('BIBLIOGRAPHY_MATCH_ONLY');
 });
 it('binds canonical resolved identity metadata and confidence to its selected candidate', async () => {
   const { record, entry, candidate } = await fixture();
@@ -111,4 +112,40 @@ it('binds canonical resolved identity metadata and confidence to its selected ca
   await expect(deriveEvidenceState({ ...linked, analysisExcerptIds: ['missing'] })).rejects.toThrow('inconsistent');
   await expect(deriveEvidenceState({ ...linked, resolution: { ...linked.resolution, candidates: [{ ...candidate, authors: ['Invented author'] }] } })).rejects.toThrow('provenance');
   await expect(deriveEvidenceState({ ...linked, resolution: { ...linked.resolution, candidates: [{ ...candidate, year: 2021 }] } })).rejects.toThrow('provenance');
+});
+it('rejects inverse raw/structured bibliography forgery in both import and canonical state', async () => {
+  const { record } = await fixture();
+  for (const raw of ['[2] Smith, J. (2020). Real paper. doi:10.1234/a', 'Smith, J. (2020a). Real paper. doi:10.1234/a']) {
+    const canonical = { ...parseBibliography(raw)[0], id: 'opaque-entry-id' };
+    const passage = { ...record.passage, text: canonical.label ? 'Claim [1]' : 'Claim (Jones, 2021)' };
+    const citation = detectCitations(passage.text)[0];
+    const fields = canonical.label ? [{ label: '1' }, { doi: '10.1234/b' }, { title: 'Forged title' }]
+      : [{ authorKey: 'jones', year: '2021' }, { doi: '10.1234/b' }, { title: 'Forged title' }];
+    for (const patch of fields) {
+      // Make downstream candidate metadata and linkages agree with the forgery.
+      const entry = { ...canonical, ...patch };
+      const candidate = bibliographyCandidate(entry);
+      const linked = { ...record, passage, citation, bibliography: [entry], resolution: { candidates: [candidate], selectedCandidateId: null, selectedBibliographyEntryId: entry.id, ambiguity: 'single' as const } };
+      await expect(assertEvidenceStateConsistency(linked)).rejects.toThrow('provenance');
+      await expect(importTrail(exportTrail(linked))).rejects.toThrow();
+    }
+  }
+});
+it('checks raw-derived fields even when forged metadata and matching citation agree', async () => {
+  const { record } = await fixture();
+  const canonical = { ...parseBibliography('Smith, J. (2020a). Real paper. doi:10.1234/a')[0], id: 'opaque-entry' };
+  for (const patch of [{ authorKey: 'jones' }, { year: '2021' }, { doi: '10.1234/b' }, { title: 'Forged title' }]) {
+    const entry = { ...canonical, ...patch };
+    const surname = entry.authorKey![0].toUpperCase() + entry.authorKey!.slice(1);
+    const passage = { ...record.passage, text: `Claim (${surname}, ${entry.year})` };
+    const candidate = bibliographyCandidate(entry);
+    const linked = { ...record, passage, citation: detectCitations(passage.text)[0], bibliography: [entry], resolution: { candidates: [candidate], selectedCandidateId: null, selectedBibliographyEntryId: entry.id, ambiguity: 'single' as const } };
+    await expect(assertEvidenceStateConsistency(linked)).rejects.toThrow('provenance');
+    await expect(importTrail(exportTrail(linked))).rejects.toThrow();
+  }
+  const passage = { ...record.passage, text: 'Claim (Smith, 2020a)' };
+  const candidate = bibliographyCandidate(canonical);
+  const linked = { ...record, passage, citation: detectCitations(passage.text)[0], bibliography: [canonical], resolution: { candidates: [candidate], selectedCandidateId: null, selectedBibliographyEntryId: canonical.id, ambiguity: 'single' as const } };
+  await expect(assertEvidenceStateConsistency(linked)).resolves.toBeUndefined();
+  expect((await importTrail(exportTrail(linked))).bibliography[0]).toEqual(canonical);
 });

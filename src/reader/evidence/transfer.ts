@@ -1,6 +1,6 @@
 import type { EvidenceExcerpt, EvidenceModelRequest, EvidenceTrailRecord, SourceDocument, SourceLocator } from './types';
 import { analysisInputFingerprint, excerptId, parseAssessment, validateExcerpt } from './source';
-import { detectCitations, matchCitation } from './citations';
+import { assertCanonicalBibliographyEntry, detectCitations, matchCitation } from './citations';
 import { assertCandidateProvenance } from './candidateProvenance';
 
 export const MAX_TRAIL_BYTES = 256 * 1024;
@@ -83,6 +83,7 @@ export async function importTrail(json: string): Promise<EvidenceTrailRecord> {
     const result: EvidenceTrailRecord['bibliography'][number] = { id: text(entry.id, 200), raw: text(entry.raw, 4000), title: text(entry.title, 1000, true) };
     for (const key of ['label', 'authorKey', 'year', 'doi'] as const) if (entry[key] !== undefined) result[key] = text(entry[key], 300);
     if (result.doi && !/^10\.\d{4,9}\/\S+$/u.test(result.doi)) return invalid();
+    try { assertCanonicalBibliographyEntry(result); } catch { return invalid(); }
     return result;
   });
   let identity: EvidenceTrailRecord['identity'] = null;

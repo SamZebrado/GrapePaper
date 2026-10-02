@@ -1,5 +1,5 @@
 import { analysisInputFingerprint, excerptId, parseAssessment, validateExcerpt } from './source';
-import { detectCitations, matchCitation } from './citations';
+import { assertCanonicalBibliographyEntry, detectCitations, matchCitation } from './citations';
 import { assertCandidateProvenance } from './candidateProvenance';
 import type { EvidenceModelRequest, EvidenceState, EvidenceTrailRecord, SourceDocument } from './types';
 
@@ -20,6 +20,7 @@ export async function deriveEvidenceState(record: EvidenceTrailRecord, source?: 
 }
 function assertStructure(record: EvidenceTrailRecord) {
   const fail = () => { throw new Error('Evidence state/provenance is inconsistent.'); };
+  for (const entry of record.bibliography) assertCanonicalBibliographyEntry(entry);
   if (record.citation && !detectCitations(record.passage.text).some(citation => citation.raw === record.citation?.raw && citation.kind === record.citation.kind && citation.start === record.citation.start && citation.end === record.citation.end && JSON.stringify(citation.keys) === JSON.stringify(record.citation.keys))) fail();
   const selectedEntry = record.bibliography.find(entry => entry.id === record.resolution.selectedBibliographyEntryId);
   if (record.bibliography.length && (!record.citation || !selectedEntry || matchCitation(record.citation, [selectedEntry]).length !== 1)) fail();

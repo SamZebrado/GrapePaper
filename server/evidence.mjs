@@ -1,6 +1,7 @@
 /** Same-service Evidence Trail boundaries. Metadata is identity only; excerpts are client-owned. */
 import { createHash } from 'node:crypto';
 import { CompanionError, boundedJson } from './companion.mjs';
+import { detectCitations, assertCanonicalBibliographyEntry, normalizeDoi } from '../src/reader/evidence/citationParser.mjs';
 
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const sha = value => createHash('sha256').update(value).digest('hex');
@@ -46,6 +47,9 @@ export function normalizeEvidenceRequest(value) {
   if (!['numeric', 'author-year'].includes(citation.kind) || !Array.isArray(citation.keys) || !citation.keys.length || citation.keys.length > 30) invalid('The selected citation is invalid.');
   const normalizedCitation = { id: id(citation.id), raw: text(citation.raw, 1_000), kind: citation.kind, keys: citation.keys.map(key => text(key, 200)), start: integer(citation.start, 0, current_passage.text.length), end: integer(citation.end, 1, current_passage.text.length) };
   if (current_passage.text.slice(normalizedCitation.start, normalizedCitation.end) !== normalizedCitation.raw) invalid('Citation must be bound to the current passage range.');
+  const detectedCitation = detectCitations(current_passage.text).find(item => item.start === normalizedCitation.start && item.end === normalizedCitation.end && item.raw === normalizedCitation.raw
+    && item.kind === normalizedCitation.kind && JSON.stringify(item.keys) === JSON.stringify(normalizedCitation.keys));
+  if (!detectedCitation) invalid('Citation semantic fields must match deterministic detection from the exact current passage.');
   const bibliography_entry = normalizeBibliographyEntry(value.bibliography_entry);
   const authorYear = bibliography_entry.authorKey && bibliography_entry.year
     ? `${bibliography_entry.authorKey.normalize('NFKC').toLocaleLowerCase('en').replace(/[’']/g, "'")}|${bibliography_entry.year.toLowerCase()}` : '';
@@ -56,6 +60,7 @@ export function normalizeEvidenceRequest(value) {
   const source_identity = { id: id(identity.id), title: text(identity.title, 1_000), confidence: identity.confidence, candidateId: id(identity.candidateId) };
   if (identity.doi !== undefined) { source_identity.doi = text(identity.doi, 300); if (!doiPattern.test(source_identity.doi)) invalid('Source DOI is invalid.'); }
   if (identity.confidence === 'exact-doi' && !source_identity.doi) invalid('Exact DOI identity requires a DOI.');
+  if (identity.confidence === 'exact-doi' && (!bibliography_entry.doi || normalizeDoi(source_identity.doi) !== bibliography_entry.doi)) invalid('Exact DOI identity must match the selected bibliography DOI.');
   if (!Array.isArray(value.excerpts) || value.excerpts.length > 3) invalid('At most three extracted evidence excerpts are accepted.');
   const excerpts = value.excerpts.map(item => {
     if (!object(item) || !object(item.provenance)) invalid('Excerpt provenance is required.');
@@ -121,6 +126,7 @@ function normalizeBibliographyEntry(value) {
   const entry = { id: id(value.id), raw: text(value.raw, 4_000), title: text(value.title, 1_000, false) };
   for (const key of ['label', 'authorKey', 'year', 'doi']) if (value[key] !== undefined) entry[key] = text(value[key], 300);
   if (entry.doi && !doiPattern.test(entry.doi)) invalid('Bibliographic DOI is invalid.');
+  try { assertCanonicalBibliographyEntry(entry); } catch { invalid('Bibliography semantic fields must match deterministic parsing of the exact raw entry.'); }
   return entry;
 }
 function metadataCandidate(item, expectedDoi) {

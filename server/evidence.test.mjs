@@ -16,7 +16,7 @@ function fixture() {
   excerpt.id = evidenceExcerptId(excerpt);
   const request = { mode: 'evidence', current_passage: { id: 'passage-1', documentId: 'current-document', text: 'Attention improves every task [1].', page: 2, anchor: 'selection-1' },
     citation: { id: 'citation-1', raw: '[1]', kind: 'numeric', keys: ['1'], start: 30, end: 33 }, source_identity: { id: 'source-1', title: 'A public fixture', confidence: 'user-confirmed', candidateId: 'candidate-1' },
-    bibliography_entry: { id: 'bibliography-1', raw: '[1] Author. A public fixture. 2020.', title: 'A public fixture', label: '1' },
+    bibliography_entry: { id: 'bibliography-1', raw: '[1] Author, F. (2020). A public fixture.', title: 'A public fixture.', label: '1', authorKey: 'author', year: '2020' },
     association: { sourceIdentityId: 'source-1', sourceDocumentId: fingerprint, fingerprint, basis: 'user-attached', verification: 'live-local' }, excerpts: [excerpt] };
   request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
   return request;
@@ -27,7 +27,7 @@ function assessment(request = fixture()) {
       { statement: 'Every task is not established.', relation: 'insufficient', evidence_excerpt_ids: [], rationale: 'The supplied source excerpt has no all-task experiments.' }],
     interpretation: 'The passage overgeneralizes beyond the supplied source.', uncertainty: 'Only one source excerpt is supplied.', missing_evidence: ['Comparative experiments for other tasks.'] };
 }
-const entry = { id: 'bib-1', raw: 'Author. A public fixture. 2020.', title: 'A public fixture' };
+const entry = { id: 'bib-1', raw: '[1] Author, F. (2020). A public fixture.', title: 'A public fixture.', label: '1', authorKey: 'author', year: '2020' };
 const metadata = (doi = '10.1234/fixture') => ({ DOI: doi, title: ['A public fixture'], author: [{ given: 'Fixture', family: 'Author' }], published: { 'date-parts': [[2020]] }, URL: 'http://localhost:8787/private' });
 
 test('resolve works without a model and does not enable metadata implicitly', async () => {
@@ -35,11 +35,11 @@ test('resolve works without a model and does not enable metadata implicitly', as
   assert.deepEqual(await generateCompanion({ mode: 'resolve', entry }, { config: { configured: false }, fetchImpl: () => assert.fail('disabled lookup must not fetch') }), { mode: 'resolve', entry_id: 'bib-1', candidates: [], lookup: 'disabled' });
 });
 test('exact DOI lookup stays on fixed Crossref host, ignores publisher URL, compares returned DOI', async () => {
-  const request = { mode: 'resolve', entry: { ...entry, doi: '10.1234/Fixture' } };
+  const request = { mode: 'resolve', entry: { ...entry, raw: `${entry.raw} doi:10.1234/Fixture`, doi: '10.1234/fixture' } };
   const fetchImpl = async (url, options) => {
-    assert.equal(String(url), 'https://api.crossref.org/works/10.1234%2FFixture');
+    assert.equal(String(url), 'https://api.crossref.org/works/10.1234%2Ffixture');
     assert.equal(options.redirect, 'error'); assert.equal(options.headers.Authorization, undefined);
-    return new Response(JSON.stringify({ message: metadata() }));
+    return new Response(JSON.stringify({ message: metadata('10.1234/Fixture') }));
   };
   const result = await generateCompanion(request, { config: { configured: false, crossref: true }, fetchImpl });
   assert.equal(result.candidates[0].confidence, 'exact-doi');
@@ -51,7 +51,7 @@ test('exact DOI lookup stays on fixed Crossref host, ignores publisher URL, comp
   assert.deepEqual(absent.candidates, []);
 });
 test('bibliographic search returns at most three candidates, never exact identity or support', async () => {
-  const result = await generateCompanion({ mode: 'resolve', entry: { ...entry, title: 'https://127.0.0.1/private?token=fixture' } }, { config: { crossref: true }, fetchImpl: async (url, options) => {
+  const result = await generateCompanion({ mode: 'resolve', entry: { ...entry, raw: '[1] Author, F. (2020). https://127.0.0.1/private?token=fixture', title: 'https://127.0.0.1/private?token=fixture' } }, { config: { crossref: true }, fetchImpl: async (url, options) => {
     const address = new URL(url);
     assert.equal(address.origin, 'https://api.crossref.org'); assert.equal(address.pathname, '/works');
     assert.equal(address.searchParams.get('rows'), '3'); assert.equal(options.redirect, 'error');
@@ -69,6 +69,13 @@ test('metadata outages, redirects, malformed and oversized JSON are unavailable,
 test('resolver rejects oversized entries and DOI URL injection before fetching', async () => {
   for (const value of [{ ...entry, raw: 'x'.repeat(4_001) }, { ...entry, doi: 'http://localhost/private' }, { ...entry, doi: '10.1234/a?token=secret' }, { ...entry, title: 'x'.repeat(1_001) }]) {
     await assert.rejects(generateCompanion({ mode: 'resolve', entry: value }, { config: { crossref: true }, fetchImpl: () => assert.fail('must not fetch invalid input') }), error => error.code === 'INVALID_INPUT');
+  }
+});
+test('resolver shares canonical raw bibliography validation and rejects semantic contradictions before Crossref calls', async () => {
+  for (const mutate of [value => { value.raw = '[2] Author, F. (2020). A public fixture.'; }, value => { value.authorKey = 'forged'; }, value => { value.year = '2021'; },
+    value => { value.doi = '10.1234/invented'; }, value => { value.title = 'An unrelated title'; }, value => { value.raw += ' doi:10.1234/right'; value.doi = '10.1234/wrong'; }]) {
+    const changed = structuredClone(entry); mutate(changed);
+    await assert.rejects(generateCompanion({ mode: 'resolve', entry: changed }, { config: { crossref: true }, fetchImpl: () => assert.fail('contradictory bibliography must not reach Crossref') }), error => error.code === 'INVALID_INPUT');
   }
 });
 test('evidence exact excerpt IDs bind raw whitespace, UTF16 offsets, label and provenance', () => {
@@ -101,7 +108,7 @@ test('grouped numeric citation preserves the exact selected bibliography entry i
   request.citation = { ...request.citation, raw: '[1, 2]', keys: ['1', '2'], start: 30, end: 36 };
   request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
   const firstHash = request.analysis_input_fingerprint;
-  request.bibliography_entry = { id: 'bibliography-2', raw: '[2] Author. A second fixture. 2021.', title: 'A second fixture', label: '2' };
+  request.bibliography_entry = { id: 'bibliography-2', raw: '[2] Author, F. (2021). A second fixture.', title: 'A second fixture.', label: '2', authorKey: 'author', year: '2021' };
   await assert.rejects(generateCompanion(request, { config, fetchImpl: () => assert.fail('changed selected entry requires a new exact hash') }), error => error.code === 'INVALID_INPUT');
   request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
   assert.notEqual(request.analysis_input_fingerprint, firstHash);
@@ -118,13 +125,47 @@ test('author-year selected reference matching uses normalized author key and exa
   const request = fixture(); const raw = '(O’Neil, 2020a)';
   request.current_passage.text = `A claim ${raw}.`;
   request.citation = { ...request.citation, raw, kind: 'author-year', keys: ["o'neil|2020a"], start: 8, end: 8 + raw.length };
-  request.bibliography_entry = { id: 'author-entry', raw: 'O’Neil (2020a). A public fixture.', title: 'A public fixture', authorKey: 'O’NEIL', year: '2020a' };
+  request.bibliography_entry = { id: 'author-entry', raw: 'O’Neil, F. (2020a). A public fixture.', title: 'A public fixture.', authorKey: "o'neil", year: '2020a' };
   request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
-  assert.equal(normalizeEvidenceRequest(request).bibliography_entry.authorKey, 'O’NEIL');
+  assert.equal(normalizeEvidenceRequest(request).bibliography_entry.authorKey, "o'neil");
   request.bibliography_entry.year = '2020b'; request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
   assert.throws(() => normalizeEvidenceRequest(request), error => error.code === 'INVALID_INPUT');
   request.bibliography_entry.year = '2020a'; request.bibliography_entry.raw = 'x'.repeat(4_001);
   assert.throws(() => normalizeEvidenceRequest(request), error => error.code === 'INVALID_INPUT');
+});
+test('forged numeric and author-year citation semantics are rejected even with a recomputed valid hash', async () => {
+  const numeric = fixture();
+  numeric.citation.keys = ['2'];
+  numeric.bibliography_entry = { ...numeric.bibliography_entry, raw: '[2] Author, F. (2020). A public fixture.', label: '2' };
+  const wrongKind = fixture(); wrongKind.citation.kind = 'author-year'; wrongKind.citation.keys = ['author|2020'];
+  const authorYear = fixture(); const raw = '(Author, 2020)';
+  authorYear.current_passage.text = `A claim ${raw}.`;
+  authorYear.citation = { ...authorYear.citation, raw, kind: 'author-year', keys: ['other|2021'], start: 8, end: 8 + raw.length };
+  authorYear.bibliography_entry = { ...authorYear.bibliography_entry, raw: '[1] Other, F. (2021). A public fixture.', authorKey: 'other', year: '2021' };
+  for (const request of [numeric, wrongKind, authorYear]) {
+    request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
+    await assert.rejects(generateCompanion(request, { config, fetchImpl: () => assert.fail('forged citation must not invoke provider') }), error => error.code === 'INVALID_INPUT');
+  }
+});
+test('bibliography structured label, author, year, DOI and title must be derived from unchanged raw before provider calls', async () => {
+  for (const mutate of [entry => { entry.raw = '[2] Author, F. (2020). A public fixture.'; }, entry => { entry.authorKey = 'another'; },
+    entry => { entry.year = '2021'; }, entry => { entry.doi = '10.1234/invented'; }, entry => { entry.title = 'An unrelated source title'; }]) {
+    const request = fixture(); mutate(request.bibliography_entry); request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
+    await assert.rejects(generateCompanion(request, { config, fetchImpl: () => assert.fail('contradictory raw provenance must not invoke provider') }), error => error.code === 'INVALID_INPUT');
+  }
+  const doi = fixture(); doi.bibliography_entry.raw += ' doi:10.1234/right'; doi.bibliography_entry.doi = '10.1234/wrong'; doi.analysis_input_fingerprint = evidenceAnalysisFingerprint(doi);
+  await assert.rejects(generateCompanion(doi, { config, fetchImpl: () => assert.fail('raw DOI A with structured DOI B must not invoke provider') }), error => error.code === 'INVALID_INPUT');
+  const opaque = fixture(); opaque.bibliography_entry.id = 'caller-owned-opaque-id'; opaque.analysis_input_fingerprint = evidenceAnalysisFingerprint(opaque);
+  assert.equal(normalizeEvidenceRequest(opaque).bibliography_entry.id, 'caller-owned-opaque-id');
+});
+test('exact-doi source identity requires the selected raw bibliography DOI, not merely an arbitrary DOI', async () => {
+  const request = fixture(); request.bibliography_entry.raw += ' doi:10.1234/right'; request.bibliography_entry.doi = '10.1234/right';
+  request.source_identity.confidence = 'exact-doi'; request.source_identity.doi = '10.1234/wrong'; request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
+  await assert.rejects(generateCompanion(request, { config, fetchImpl: () => assert.fail('differing exact DOI must not invoke provider') }), error => error.code === 'INVALID_INPUT');
+  request.source_identity.doi = '10.1234/RIGHT'; request.analysis_input_fingerprint = evidenceAnalysisFingerprint(request);
+  assert.equal(normalizeEvidenceRequest(request).source_identity.doi, '10.1234/RIGHT');
+  const missing = fixture(); missing.source_identity.confidence = 'exact-doi'; missing.source_identity.doi = '10.1234/right'; missing.analysis_input_fingerprint = evidenceAnalysisFingerprint(missing);
+  await assert.rejects(generateCompanion(missing, { config, fetchImpl: () => assert.fail('missing bibliography DOI must not invoke provider') }), error => error.code === 'INVALID_INPUT');
 });
 test('model payload is bounded to unique three excerpts from one source with no invented offsets', () => {
   for (const mutate of [value => { value.excerpts = Array(4).fill(value.excerpts[0]); }, value => { value.excerpts[0].text = 'x'.repeat(1_201); }, value => { value.excerpts.push(structuredClone(value.excerpts[0])); }, value => { value.excerpts[0].locator.start = -1; }, value => { value.source_identity.confidence = 'candidate'; }]) {

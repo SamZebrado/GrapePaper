@@ -226,6 +226,7 @@ describe('Evidence Trail explicit transfer', () => {
     exact.resolution.candidates[0] = { ...exact.resolution.candidates[0], provider: 'crossref', confidence: 'exact-doi', doi: '10.1234/source', matchedFields: ['doi'] };
     exact.identity = { ...exact.identity, confidence: 'exact-doi', doi: '10.1234/source' };
     exact.bibliography[0].doi = '10.1234/source';
+    exact.bibliography[0].raw += ' doi:10.1234/source';
     expect((await importTrail(JSON.stringify(exact))).identity?.confidence).toBe('exact-doi');
     exact.bibliography[0].doi = '10.1234/another';
     await expect(importTrail(JSON.stringify(exact))).rejects.toThrow();
