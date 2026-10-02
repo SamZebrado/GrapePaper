@@ -120,3 +120,14 @@ it('does not accept a post-timeout response from a provider ignoring abort', asy
   expect(screen.queryByText('The result does not establish universal superiority.')).not.toBeInTheDocument();
   await waitFor(() => expect(state()).toBe('RELEVANT_SOURCE_EXCERPT_LOCATED'));
 });
+it('restores a same-passage citation with an opaque ID without changing its identity', async () => {
+  render(<EvidenceTrail passage={passage} bibliographyText={bibliography} endpoint=""/>);
+  const imported = { version: 1, passage, citation: { ...detectCitations(passage.text)[0], id: 'opaque-citation-1' }, bibliography: [], identity: null, resolution: { candidates: [], selectedCandidateId: null, selectedBibliographyEntryId: null, ambiguity: 'unresolved' }, association: null, sourceFingerprint: null, excerpts: [], assessment: null, importedAssessment: null, analysisExcerptIds: [], sourceAvailable: false, searched: false, verification: 'live-local' };
+  const file = new File([JSON.stringify(imported)], 'trail.json', { type: 'application/json' });
+  Object.defineProperty(file, 'text', { value: async () => JSON.stringify(imported) });
+  fireEvent.change(screen.getByLabelText('导入证据 JSON 文件'), { target: { files: [file] } });
+  await screen.findByText('导入记录未验证。需重新提供字节相同的本地来源；不会信任导入的 AI 解释。');
+  expect(screen.queryByText('导入的引用标记不属于当前选段。')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('引用标记')).toHaveValue(detectCitations(passage.text)[0].id);
+  expect(state()).toBe('CURRENT_PAPER_ONLY');
+});

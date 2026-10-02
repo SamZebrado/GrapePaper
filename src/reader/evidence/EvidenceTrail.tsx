@@ -108,6 +108,8 @@ export default function EvidenceTrail({ passage, bibliographyText, endpoint }: P
     });
   };
   const state = validatedState?.record === record && validatedState.source === source ? validatedState.state : 'CURRENT_PAPER_ONLY';
+  // The control uses local option IDs; an imported opaque ID stays in the record.
+  const displayedCitationId = citations.find(item => record.citation && item.raw === record.citation.raw && item.kind === record.citation.kind && item.start === record.citation.start && item.end === record.citation.end && JSON.stringify(item.keys) === JSON.stringify(record.citation.keys))?.id || '';
   const interpret = () => {
     if (!record.citation || !record.identity || !source || record.verification !== 'live-local' || !selectedIds.length || !endpoint) return;
     const selectedEntry = record.bibliography.find(item => item.id === record.resolution.selectedBibliographyEntryId);
@@ -134,7 +136,7 @@ export default function EvidenceTrail({ passage, bibliographyText, endpoint }: P
       if (file.size > 256000) throw new Error('证据 JSON 需小于 256 KB。');
       const restored = await importTrail(await file.text());
       if (restored.passage.id !== passage.id || restored.passage.documentId !== passage.documentId || restored.passage.text !== passage.text || restored.passage.page !== passage.page || restored.passage.anchor !== passage.anchor) throw new Error('导入记录不属于当前选段；请先打开对应论文并选择同一段。');
-      if (restored.citation && !citations.some(item => item.id === restored.citation?.id && item.raw === restored.citation.raw)) throw new Error('导入的引用标记不属于当前选段。');
+      if (restored.citation && !citations.some(item => item.raw === restored.citation?.raw && item.kind === restored.citation.kind && item.start === restored.citation.start && item.end === restored.citation.end && JSON.stringify(item.keys) === JSON.stringify(restored.citation.keys))) throw new Error('导入的引用标记不属于当前选段。');
       return restored;
     }, restored => { clearSource(); setEntryId(''); setCandidates([]); setRecord(restored); setMessage('导入记录未验证。需重新提供字节相同的本地来源；不会信任导入的 AI 解释。'); });
   };
@@ -144,7 +146,7 @@ export default function EvidenceTrail({ passage, bibliographyText, endpoint }: P
     <p className="trailState" data-evidence-state={state} role="status">{labels[state]}</p>
     <p className="trailBoundary">来源身份不等于支持关系。检索只定位候选，AI 解释不是独立事实核查。</p>
     <details><summary>当前论文说了什么</summary><p>待核对论断为上方“当前选段”的原文；它不是被引用来源的证据。</p><small>当前论文 · 第 {passage.page} 页</small></details>
-    <label>引用标记<select aria-label="引用标记" value={record.citation?.id || ''} onChange={event => changeCitation(citations.find(item => item.id === event.target.value) || null)}><option value="">选择引用（不自动合并多条）</option>{citations.map(item => <option key={item.id} value={item.id}>{item.raw}</option>)}</select></label>
+    <label>引用标记<select aria-label="引用标记" value={displayedCitationId} onChange={event => changeCitation(citations.find(item => item.id === event.target.value) || null)}><option value="">选择引用（不自动合并多条）</option>{citations.map(item => <option key={item.id} value={item.id}>{item.raw}</option>)}</select></label>
     {!citations.length && <p className="trailBoundary">未识别出可靠的数字或作者年份引用；不会猜测来源。</p>}
     <details className="trailReferences"><summary>核对 / 补充参考文献</summary><label>书目原文<textarea aria-label="证据链书目原文" maxLength={24000} rows={6} value={references} onChange={event => { setReferences(event.target.value); changeCitation(record.citation); }}/></label><p>支持带编号或作者年份的逐条书目；歧义与无匹配会保留，不按排列位置猜编号。</p></details>
     {record.citation && <><label>匹配书目<select aria-label="匹配书目" value={entryId} onChange={event => chooseEntry(event.target.value)}><option value="">{matches.length ? `找到 ${matches.length} 条候选，请核对` : '未匹配；请补充完整书目'}</option>{matches.map(item => <option key={item.id} value={item.id}>{item.label ? `[${item.label}] ` : ''}{item.raw.slice(0, 160)}</option>)}</select></label>{matches.length > 1 && <p className="trailBoundary">多个候选 / 多篇引用：一次只核对一篇，不自动消除歧义。</p>}</>}
