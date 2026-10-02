@@ -19,7 +19,8 @@
     "build:zotero": "node zotero/build.mjs",
     "test:all": "npm run test:run && npm run test:server && npm run test:zotero",
     "lint:reading": "eslint src/reader src/GrapeApplication.tsx",
-    "test:e2e": "node scripts/e2e-reading.mjs"
+    "test:e2e": "node scripts/e2e-reading.mjs",
+    "test:e2e:evidence": "node scripts/e2e-evidence.mjs"
   },
   "dependencies": {
     "@tiptap/extension-placeholder": "^2.11.5",

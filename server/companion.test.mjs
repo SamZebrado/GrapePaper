@@ -1,4 +1,5 @@
 import test from 'node:test';
+import './evidence.test.mjs';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createCompanionServer } from './index.mjs';

@@ -95,7 +95,8 @@ export function createCompanionServer({ env = process.env, fetchImpl = fetch, ma
     response.on('close', () => { if (!response.writableEnded) controller.abort(); });
     try {
       const input = await bodyJson(request);
-      const value = await generateCompanion(input, { config: readConfig(env), fetchImpl, signal: controller.signal });
+      const config = input?.mode === 'resolve' ? { configured: false, crossref: env.GRAPEPAPER_CROSSREF_ENABLED === '1' } : readConfig(env);
+      const value = await generateCompanion(input, { config, fetchImpl, signal: controller.signal });
       sendJson(response, 200, value);
     } catch (error) {
       const safe = error instanceof CompanionError ? error : new CompanionError(500, 'SERVER_ERROR', 'The reading request could not be completed.');

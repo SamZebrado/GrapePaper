@@ -1,5 +1,6 @@
 /** GrapePaper's dependency-free, server-side reading companion. Node 20+. */
 import { createHash } from 'node:crypto';
+import { normalizeEvidenceRequest, normalizeEvidenceAssessment, buildEvidenceMessages, resolveBibliography } from './evidence.mjs';
 
 export class CompanionError extends Error {
   constructor(status, code, message) {
@@ -84,7 +85,7 @@ export function normalizeRequest(value) {
 export function readConfig(env = process.env) {
   const rawBase = env.GRAPEPAPER_API_BASE_URL || '';
   const model = env.GRAPEPAPER_MODEL || '';
-  if (!rawBase && !model) return { configured: false };
+  if (!rawBase && !model) return { configured: false, ...(env.GRAPEPAPER_CROSSREF_ENABLED === '1' ? { crossref: true } : {}) };
   if (!rawBase || !model) throw new CompanionError(503, 'PROVIDER_NOT_CONFIGURED', 'Set GRAPEPAPER_API_BASE_URL and GRAPEPAPER_MODEL on the local server.');
   let base;
   try { base = new URL(rawBase); } catch {
@@ -106,7 +107,7 @@ export function readConfig(env = process.env) {
   };
 }
 
-async function boundedJson(response, maxBytes = MAX_RESPONSE_BYTES) {
+export async function boundedJson(response, maxBytes = MAX_RESPONSE_BYTES) {
   if (!response.body) throw new CompanionError(502, 'INVALID_PROVIDER_RESPONSE', 'The upstream returned an empty response.');
   const reader = response.body.getReader();
   const chunks = [];
@@ -231,6 +232,36 @@ export function normalizeResponse(value, sources) {
 }
 
 export async function generateCompanion(input, { config = readConfig(), fetchImpl = fetch, signal = new AbortController().signal } = {}) {
+  if (input?.mode === 'resolve') return resolveBibliography(input, { config, fetchImpl, signal });
+  if (input?.mode === 'evidence') {
+    const request = normalizeEvidenceRequest(input);
+    if (!request.excerpts.length) return { mode: 'evidence', status: 'unavailable', assessment: null, reason: 'no-evidence' };
+    if (!config.configured) throw new CompanionError(503, 'PROVIDER_NOT_CONFIGURED', '尚未配置伴读模型。原文片段可本地查看；模型解读尚不可用。');
+    const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(config.timeoutMs || 45_000)]);
+    try {
+      const response = await fetchImpl(config.endpoint, {
+        method: 'POST', signal: requestSignal, redirect: 'error',
+        headers: { 'Content-Type': 'application/json', ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}) },
+        body: JSON.stringify({ model: config.model, messages: buildEvidenceMessages(request), response_format: { type: 'json_object' }, max_tokens: 2_000 }),
+      });
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new CompanionError(response.status === 429 ? 429 : 502, response.status === 429 ? 'PROVIDER_RATE_LIMITED' : 'PROVIDER_ERROR', 'The model provider rejected the evidence request.');
+      }
+      const data = await boundedJson(response);
+      const content = data?.choices?.[0]?.message?.content;
+      let parsed;
+      try { if (typeof content !== 'string') throw new Error(); parsed = JSON.parse(content); } catch {
+        throw new CompanionError(502, 'INVALID_PROVIDER_RESPONSE', 'The model response was not valid structured evidence interpretation.');
+      }
+      return { mode: 'evidence', status: 'available', assessment: normalizeEvidenceAssessment(parsed, request) };
+    } catch (error) {
+      if (error instanceof CompanionError) throw error;
+      if (signal.aborted) throw new CompanionError(499, 'REQUEST_CANCELLED', 'The evidence request was cancelled.');
+      if (requestSignal.aborted) throw new CompanionError(504, 'PROVIDER_TIMEOUT', 'The evidence request timed out.');
+      throw new CompanionError(502, 'PROVIDER_UNAVAILABLE', 'The model provider could not be reached.');
+    }
+  }
   const request = normalizeRequest(input);
   if (!config.configured) throw new CompanionError(503, 'PROVIDER_NOT_CONFIGURED', '尚未配置伴读模型。请在本地服务设置模型，或导出伴读提示词。');
   const sources = suppliedSources(request);

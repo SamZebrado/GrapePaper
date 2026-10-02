@@ -1,0 +1,114 @@
+import { webcrypto } from 'node:crypto';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { bibliographyCandidate, detectCitations, parseBibliography } from './citations';
+import { analysisInputFingerprint, ingestText, searchSource } from './source';
+import { deriveEvidenceState, assertEvidenceStateConsistency } from './semantics';
+import { exportTrail, importTrail, revalidateTrail } from './transfer';
+import type { EvidenceTrailRecord } from './types';
+beforeEach(() => vi.stubGlobal('crypto', webcrypto));
+afterEach(() => vi.unstubAllGlobals());
+async function fixture() {
+  const passage = { id: 'passage', documentId: 'current', text: 'Transformer recurrence architecture [1].', page: 1, anchor: '' };
+  const record: EvidenceTrailRecord = { version: 1, passage, citation: detectCitations(passage.text)[0], bibliography: [], identity: null, resolution: { candidates: [], selectedCandidateId: null, selectedBibliographyEntryId: null, ambiguity: 'unresolved' }, association: null, sourceFingerprint: null, excerpts: [], assessment: null, importedAssessment: null, analysisExcerptIds: [], sourceAvailable: false, searched: false, verification: 'live-local' };
+  const entry = parseBibliography('[1] Smith, A. (2020). Transformer architecture.')[0];
+  const candidate = bibliographyCandidate(entry);
+  const source = await ingestText('Transformer recurrence architecture tested translation only. '.repeat(30), 'Local source');
+  return { record, entry, candidate, source };
+}
+it('derives all seven canonical states without independent mutable state', async () => {
+  const { record, entry, candidate, source } = await fixture();
+  expect(await deriveEvidenceState(record, source)).toBe('CURRENT_PAPER_ONLY');
+  record.bibliography = [entry]; record.resolution = { candidates: [candidate], selectedCandidateId: null, selectedBibliographyEntryId: entry.id, ambiguity: 'single' };
+  expect(await deriveEvidenceState(record, source)).toBe('BIBLIOGRAPHY_MATCH_ONLY');
+  record.identity = { id: 'identity', candidateId: candidate.id, title: candidate.title, confidence: 'user-confirmed' }; record.resolution.selectedCandidateId = candidate.id;
+  expect(await deriveEvidenceState(record, source)).toBe('SOURCE_IDENTITY_RESOLVED_TEXT_UNAVAILABLE');
+  record.sourceFingerprint = source.fingerprint; record.association = { sourceIdentityId: 'identity', sourceDocumentId: source.id, fingerprint: source.fingerprint, basis: 'user-attached', verification: 'live-local' }; record.sourceAvailable = true;
+  expect(await deriveEvidenceState(record, source)).toBe('SOURCE_TEXT_AVAILABLE_NOT_SEARCHED');
+  record.searched = true;
+  expect(await deriveEvidenceState(record, source)).toBe('SOURCE_TEXT_SEARCHED_RELEVANT_EXCERPT_NOT_FOUND');
+  record.excerpts = await searchSource(source, 'Transformer recurrence architecture');
+  expect(await deriveEvidenceState(record, source)).toBe('RELEVANT_SOURCE_EXCERPT_LOCATED');
+  const input = { mode: 'evidence' as const, current_passage: record.passage, citation: record.citation!, bibliography_entry: entry, source_identity: record.identity, association: record.association, excerpts: record.excerpts };
+  record.analysisExcerptIds = record.excerpts.map(excerpt => excerpt.id);
+  record.assessment = { current_passage_id: 'passage', citation_id: record.citation!.id, source_identity_id: 'identity', analysis_input_fingerprint: await analysisInputFingerprint(input), evidence_excerpt_ids: record.analysisExcerptIds, aspects: [{ statement: 'A translation test is reported.', relation: 'mentions', evidence_excerpt_ids: record.analysisExcerptIds, rationale: 'The extracted text only reports translation.' }], interpretation: 'A source statement, not universal validation.', uncertainty: 'Limited excerpt.', missing_evidence: [], kind: 'model-interpretation' };
+  await assertEvidenceStateConsistency(record, source);
+  expect(await deriveEvidenceState(record, source)).toBe('MODEL_INTERPRETATION_FROM_LOCATED_EXCERPT');
+  const actualFingerprint = record.assessment.analysis_input_fingerprint;
+  record.assessment = { ...record.assessment, analysis_input_fingerprint: '0'.repeat(64) };
+  await expect(deriveEvidenceState(record, source)).rejects.toThrow('fingerprint');
+  record.assessment = { ...record.assessment, analysis_input_fingerprint: actualFingerprint };
+  record.analysisExcerptIds.reverse();
+  await expect(deriveEvidenceState(record, source)).rejects.toThrow('fingerprint');
+  record.analysisExcerptIds.reverse();
+  const restored = await importTrail(exportTrail(record));
+  expect(restored.assessment).toBeNull(); expect(restored.importedAssessment).toEqual(record.assessment);
+  expect(await deriveEvidenceState(restored)).toBe('BIBLIOGRAPHY_MATCH_ONLY');
+  const validated = await revalidateTrail(restored, source);
+  expect(validated.assessment).toBeNull(); expect(validated.importedAssessment).toBeNull();
+  expect(await deriveEvidenceState(validated, source)).toBe('RELEVANT_SOURCE_EXCERPT_LOCATED');
+  record.passage = { ...record.passage, text: 'Different claim with same ID [1].' };
+  await expect(deriveEvidenceState(record, source)).rejects.toThrow();
+});
+it('rejects illegal source/excerpt/imported combinations rather than promoting them', async () => {
+  const { record, source } = await fixture();
+  await expect(deriveEvidenceState({ ...record, sourceAvailable: true })).rejects.toThrow();
+  await expect(deriveEvidenceState({ ...record, searched: true })).rejects.toThrow();
+  const excerpts = await searchSource(source, 'Transformer recurrence architecture');
+  await expect(deriveEvidenceState({ ...record, excerpts })).rejects.toThrow();
+  await expect(deriveEvidenceState({ ...record, verification: 'imported-unverified', sourceAvailable: true })).rejects.toThrow();
+  await expect(deriveEvidenceState({ ...record, sourceFingerprint: source.fingerprint })).rejects.toThrow('inconsistent');
+  const association = { sourceIdentityId: 'identity', sourceDocumentId: source.id, fingerprint: source.fingerprint, basis: 'user-attached' as const, verification: 'live-local' as const };
+  await expect(deriveEvidenceState({ ...record, association })).rejects.toThrow('inconsistent');
+  const entry = parseBibliography('[1] Smith, A. (2020). Transformer architecture.')[0];
+  const candidate = bibliographyCandidate(entry);
+  const linked = { ...record, bibliography: [entry], identity: { id: 'identity', candidateId: candidate.id, title: candidate.title, confidence: 'user-confirmed' as const }, resolution: { candidates: [candidate], selectedCandidateId: candidate.id, selectedBibliographyEntryId: entry.id, ambiguity: 'single' as const }, association, sourceFingerprint: source.fingerprint };
+  await expect(deriveEvidenceState({ ...linked, verification: 'imported-unverified' })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, association: { ...association, verification: 'imported-unverified' } })).rejects.toThrow('inconsistent');
+});
+it('cannot promote unrelated bibliography text or an unselected entry into a matched state', async () => {
+  const { record, entry } = await fixture();
+  for (const verification of ['live-local', 'imported-unverified'] as const) {
+    const bibliographyOnly = { ...record, citation: null, bibliography: [entry], verification };
+    await expect(deriveEvidenceState(bibliographyOnly)).rejects.toThrow('inconsistent');
+    await expect(deriveEvidenceState({ ...bibliographyOnly, citation: record.citation })).rejects.toThrow('inconsistent');
+    const resolution = { ...record.resolution, selectedBibliographyEntryId: entry.id };
+    await expect(deriveEvidenceState({ ...bibliographyOnly, resolution })).rejects.toThrow('inconsistent');
+    const unrelated = { ...entry, label: '2' };
+    await expect(deriveEvidenceState({ ...record, bibliography: [unrelated], resolution, verification })).rejects.toThrow('inconsistent');
+    expect(await deriveEvidenceState({ ...record, bibliography: [entry], resolution, verification })).toBe('BIBLIOGRAPHY_MATCH_ONLY');
+  }
+});
+it('re-detects citation binding before canonical bibliography-state promotion', async () => {
+  const { record, entry } = await fixture();
+  const linked = { ...record, bibliography: [entry], resolution: { ...record.resolution, selectedBibliographyEntryId: entry.id } };
+  const passage = { ...record.passage, text: 'Claim [9]' };
+  const citation = { ...detectCitations(passage.text)[0], keys: ['1'] };
+  await expect(deriveEvidenceState({ ...linked, passage, citation })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, passage })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, citation: { ...record.citation!, raw: '[9]' } })).rejects.toThrow('inconsistent');
+  const opaque = { ...linked, citation: { ...record.citation!, id: 'opaque-citation-1' } };
+  expect(await deriveEvidenceState(await importTrail(exportTrail(opaque)))).toBe('BIBLIOGRAPHY_MATCH_ONLY');
+});
+it('cannot invent exact DOI provenance for a linked entry without that DOI', async () => {
+  const { record, entry } = await fixture();
+  const candidate = { ...bibliographyCandidate(entry), provider: 'crossref' as const, confidence: 'exact-doi' as const, doi: '10.1234/source', matchedFields: ['doi' as const] };
+  const linked = { ...record, bibliography: [entry], resolution: { candidates: [candidate], selectedCandidateId: null, selectedBibliographyEntryId: entry.id, ambiguity: 'single' as const } };
+  await expect(deriveEvidenceState(linked)).rejects.toThrow('provenance');
+  await expect(deriveEvidenceState({ ...linked, bibliography: [{ ...entry, doi: '10.1234/other' }] })).rejects.toThrow('provenance');
+  expect(await deriveEvidenceState({ ...linked, bibliography: [{ ...entry, doi: candidate.doi }] })).toBe('BIBLIOGRAPHY_MATCH_ONLY');
+});
+it('binds canonical resolved identity metadata and confidence to its selected candidate', async () => {
+  const { record, entry, candidate } = await fixture();
+  const identity = { id: 'identity', candidateId: candidate.id, title: candidate.title, confidence: 'user-confirmed' as const };
+  const linked = { ...record, bibliography: [entry], identity, resolution: { candidates: [candidate], selectedCandidateId: candidate.id, selectedBibliographyEntryId: entry.id, ambiguity: 'single' as const } };
+  expect(await deriveEvidenceState(linked)).toBe('SOURCE_IDENTITY_RESOLVED_TEXT_UNAVAILABLE');
+  await expect(deriveEvidenceState({ ...linked, identity: { ...identity, title: 'Different paper' } })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, identity: { ...identity, doi: '10.1234/forged' } })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, identity: { ...identity, confidence: 'exact-doi' } })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, identity: null })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, resolution: { ...linked.resolution, ambiguity: 'multiple' } })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, resolution: { ...linked.resolution, candidates: [candidate, candidate] } })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, analysisExcerptIds: ['missing'] })).rejects.toThrow('inconsistent');
+  await expect(deriveEvidenceState({ ...linked, resolution: { ...linked.resolution, candidates: [{ ...candidate, authors: ['Invented author'] }] } })).rejects.toThrow('provenance');
+  await expect(deriveEvidenceState({ ...linked, resolution: { ...linked.resolution, candidates: [{ ...candidate, year: 2021 }] } })).rejects.toThrow('provenance');
+});
