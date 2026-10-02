@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
+import { execFileSync } from 'node:child_process';
 
 const bridgeSource = await readFile(new URL('./bridge.js', import.meta.url), 'utf8');
 const bootstrapSource = await readFile(new URL('./bootstrap.js', import.meta.url), 'utf8');
@@ -54,7 +55,7 @@ test('empty and overlong selections are rejected, not silently shortened', () =>
   assert.throws(() => bridge.createURL(bridge.DEFAULT_APP_URL, payload), /too long/);
 });
 
-async function pluginHarness(appURL = 'http://localhost:5173/') {
+async function pluginHarness(appURL = 'http://localhost:5173/', registerPane) {
   const calls = { launches: [], alerts: [], registrations: [], unregisters: [], pane: null, itemReads: [] };
   const buttons = [];
   const items = new Map([
@@ -69,7 +70,7 @@ async function pluginHarness(appURL = 'http://localhost:5173/') {
         registerEventListener(...args) { calls.registrations.push(args); },
         unregisterEventListener(...args) { calls.unregisters.push(args); },
       },
-      PreferencePanes: { register(value) { calls.pane = value; return 'grapepaper-pane'; }, unregister() { calls.pane = null; } },
+      PreferencePanes: { register(value) { calls.pane = value; return registerPane ? registerPane(context) : 'grapepaper-pane'; }, unregister() { calls.pane = null; } },
       Items: { get(id) { calls.itemReads.push(id); return items.get(id); } },
       Prefs: { get: () => appURL },
       launchURL: value => calls.launches.push(value),
@@ -139,4 +140,98 @@ test('invalid configured destination reports an error without opening a page', a
   harness.buttons[0].click();
   assert.equal(harness.calls.launches.length, 0);
   assert.match(harness.calls.alerts[0], /HTTPS/);
+});
+
+test('disable then re-enable registers a fresh listener and leaves old buttons inert', async () => {
+  const harness = await pluginHarness();
+  harness.handler(harness.event);
+  harness.context.shutdown();
+  harness.context.shutdown();
+  await harness.context.startup({ id: 'grapepaper@example.org', rootURI: 'file:///plugin/' });
+  const fresh = harness.calls.registrations[1][1];
+  assert.notEqual(fresh, harness.handler);
+  harness.buttons[0].click();
+  assert.equal(harness.calls.launches.length, 0);
+  fresh(harness.event);
+  harness.buttons[1].click();
+  assert.equal(harness.calls.launches.length, 1);
+  harness.context.shutdown();
+  assert.equal(harness.calls.pane, null);
+  assert.equal(harness.buttons[1].isConnected, false);
+});
+
+test('shutdown during asynchronous preference registration cleans the late pane', async () => {
+  const harness = await pluginHarness(undefined, context => {
+    context.shutdown();
+    return Promise.resolve('grapepaper-pane');
+  });
+  assert.equal(harness.calls.pane, null);
+  harness.handler(harness.event);
+  assert.equal(harness.buttons.length, 0);
+});
+
+test('preference registration failure unregisters the reader listener', async () => {
+  let context;
+  let removed = 0;
+  await assert.rejects(pluginHarness(undefined, value => {
+    context = value;
+    const original = value.Zotero.Reader.unregisterEventListener;
+    value.Zotero.Reader.unregisterEventListener = (...args) => { removed++; original(...args); };
+    return Promise.reject(new Error('pane failed'));
+  }), /pane failed/);
+  assert.equal(removed, 1);
+  // Shutdown after failure must also remain safe.
+  context.shutdown();
+});
+
+test('preferences validate destination before writing and read the namespaced preference', async () => {
+  const source = await readFile(new URL('./preferences.js', import.meta.url), 'utf8');
+  const writes = [];
+  const input = { value: '' };
+  const status = {};
+  const pane = { querySelector: selector => selector === '#grapepaper-app-url' ? input : status };
+  const window = {};
+  vm.runInNewContext(source, {
+    window, GrapePaperBridge: bridge,
+    Zotero: { Prefs: {
+      get(key, global) { assert.equal(key, 'extensions.grapepaper.appURL'); assert.equal(global, true); return ''; },
+      set(...args) { writes.push(args); },
+    } },
+  });
+  window.GrapePaperPreferences.init(pane);
+  assert.equal(input.value, bridge.DEFAULT_APP_URL);
+  input.value = 'http://unsafe.example/';
+  window.GrapePaperPreferences.save({ closest: () => pane });
+  assert.equal(writes.length, 0);
+  input.value = 'https://trusted.example/GrapePaper/';
+  window.GrapePaperPreferences.save({ closest: () => pane });
+  assert.deepEqual(writes[0], ['extensions.grapepaper.appURL', input.value, true]);
+});
+
+test('XPI is deterministic and contains the exact six runtime files with 7–10 manifest', async () => {
+  const root = new URL('./', import.meta.url);
+  const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
+  assert.equal(manifest.applications.zotero.strict_min_version, '7.0');
+  assert.equal(manifest.applications.zotero.strict_max_version, '10.0.*');
+  assert.equal(manifest.applications.zotero.update_url, 'https://samzebrado.github.io/GrapePaper/zotero-updates.json');
+  const updates = JSON.parse(await readFile(new URL('../public/zotero-updates.json', root), 'utf8'));
+  assert.deepEqual(updates, { addons: { 'grapepaper@grapepaper.app': { updates: [] } } });
+  execFileSync(process.execPath, [new URL('build.mjs', root).pathname]);
+  const output = new URL(`dist/grapepaper-${manifest.version}.xpi`, root);
+  const first = await readFile(output);
+  execFileSync(process.execPath, [new URL('build.mjs', root).pathname]);
+  assert.deepEqual(await readFile(output), first);
+  const entries = [];
+  let offset = 0;
+  while (first.readUInt32LE(offset) === 0x04034b50) {
+    const size = first.readUInt32LE(offset + 18);
+    const nameLength = first.readUInt16LE(offset + 26);
+    const extraLength = first.readUInt16LE(offset + 28);
+    const name = first.subarray(offset + 30, offset + 30 + nameLength).toString();
+    const dataStart = offset + 30 + nameLength + extraLength;
+    assert.deepEqual(first.subarray(dataStart, dataStart + size), await readFile(new URL(name, root)));
+    entries.push(name);
+    offset = dataStart + size;
+  }
+  assert.deepEqual(entries, ['manifest.json', 'bootstrap.js', 'bridge.js', 'prefs.js', 'preferences.xhtml', 'preferences.js']);
 });

@@ -3,7 +3,7 @@ import { companionPrompt, companionRequest, parseReply, type CompanionReply, typ
 import { confirmPassage, digest, emptySession, parseProgress, passageIdentity, PROGRESS_KEY, type ProgressData } from './session';
 import './ReadingWorkspace.css';
 import ReflowPage from './ReflowPage';
-import ServiceConnection from './ServiceConnection';
+import ServiceConnection from './AIServiceConnection';
 import { DEFAULT_COMPANION_ENDPOINT } from './serviceConnection';
 
 const PdfReader = lazy(() => import('./PdfReader'));

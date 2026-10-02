@@ -54,9 +54,9 @@ Pages 只提供静态文件。用预览连接本机模型服务时，按[配置�
 npm run build:zotero
 ```
 
-在 Zotero 中通过「工具 → 插件 → 从文件安装插件」安装 `zotero/dist/grapepaper-0.1.0.xpi`，在 GrapePaper 设置中填入网页地址。选中文字后点击 **GrapePaper 伴读**；到网页读完后再点对号。已打开的同源网页通过内存握手接收新选段，延续阅读会话。
+在独立 Zotero 测试 profile 中通过「工具 → 插件 → 从文件安装插件」安装 `zotero/dist/grapepaper-0.1.1.xpi`，在 GrapePaper 设置中填入网页地址。选中文字后点击 **GrapePaper 伴读**；到网页读完后再点对号。已打开的同源网页通过内存握手接收新选段，延续阅读会话。
 
-插件按 Zotero 7/8 官方阅读器 API 实现，目前是**实验版选段桥接**，尚未在真实 Zotero 桌面完成安装验证；不是完整内嵌侧栏，也不自动同步 Zotero 数据库。[安装、兼容性和桥接说明](zotero/README.md)
+插件清单允许 Zotero 7.0–10.0.*。2026-10-02 已在 macOS 的独立临时 profile/data 中实测 Zotero 10.0.4：安装、偏好保存/重开/拒绝不安全地址、真实 PDF 选文、网页接收、停用/启用和重启持久性。目前仍是**实验版选段桥接**；7/8 未实际运行，不把声明范围或自动合同测试等同于各版本桌面验证。[安装、兼容性和桥接说明](zotero/README.md)
 
 ## 能力与限制
 
@@ -86,12 +86,12 @@ npm run build:zotero
 npm run test:e2e     # 需先启动 npm run dev，并安装 Playwright Chromium
 ```
 
-CI 执行上述构建和测试，并上传构建出的实验版 XPI。真实模型推理与真实 Zotero 安装需在对应环境验证；自动测试使用受控响应，不能替代这些验证。
+CI 执行上述构建和测试，并上传构建出的实验版 XPI。自动模型测试使用受控响应，真实模型推理仍未验证；Zotero 10.0.4 的桌面 smoke 独立于自动测试，详见兼容性说明。
 
 技术栈：React 18、TypeScript、Vite、PDF.js、Zustand、TipTap；MIT 许可。PDF.js 及其衍生 CSS 遵循 Apache-2.0，[第三方说明](THIRD_PARTY_NOTICES.md)。
 
-下一步优先验证真实 Zotero 使用，再扩展可追溯的全文来源获取和内嵌伴读。
+下一步是审计引用到来源证据的可追溯性与竞品能力；尚未实现自动全文来源获取或内嵌伴读。
 
 ---
 
-**English** — GrapePaper pairs original PDF text with a Chinese reading companion. Select text, draw a rectangle or lasso, inspect the explanation and citations, then explicitly check the passage as read. Reading markers stay in memory unless local persistence is enabled. Occasional sourced story cards or reflection prompts add variety without a document completion score. A local server connects to an OpenAI-compatible model; API keys remain server-side. The experimental Zotero 7/8 bridge transfers a selected excerpt into the same web reader. Full-text retrieval, live news search, OCR and real Zotero desktop validation are not yet included. See the setup and evidence limits above.
+**English** — GrapePaper pairs original PDF text with a Chinese reading companion. Select text, draw a rectangle or lasso, inspect the explanation and citations, then explicitly check the passage as read. Reading markers stay in memory unless local persistence is enabled. Occasional sourced story cards or reflection prompts add variety without a document completion score. A local server connects to an OpenAI-compatible model; API keys remain server-side and real inference remains unverified. The experimental Zotero bridge declares 7.0–10.0.* compatibility and transfers a selected excerpt into the same web reader. Real desktop smoke tested on Zotero 10.0.4 on macOS; 7/8 were not run. Full-text retrieval, live news search and OCR are not yet included. See the setup and evidence limits above.

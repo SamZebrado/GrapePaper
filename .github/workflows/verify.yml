@@ -20,7 +20,7 @@ jobs:
       - run: npm run build
       - run: npm run build:pages
       - name: Published preview matches source
-        run: git diff --exit-code -- docs/index.html docs/assets docs/favicon.svg docs/icons.svg docs/PDFJS-LICENSE.txt docs/THIRD_PARTY_NOTICES.md
+        run: git diff --exit-code -- docs/index.html docs/assets docs/favicon.svg docs/icons.svg docs/zotero-updates.json docs/PDFJS-LICENSE.txt docs/THIRD_PARTY_NOTICES.md
       - run: npm run build:zotero
       - run: npx playwright install --with-deps chromium
       - name: Browser reading flow

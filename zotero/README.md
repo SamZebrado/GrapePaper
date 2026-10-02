@@ -4,19 +4,19 @@
 
 ## 安装与最小操作
 
-1. 在项目根目录执行 `node zotero/build.mjs`，生成 `zotero/dist/grapepaper-0.1.0.xpi`。构建只需要 Node.js，不下载额外依赖。
+1. 在项目根目录执行 `node zotero/build.mjs`，生成 `zotero/dist/grapepaper-0.1.1.xpi`。构建只需要 Node.js，不下载额外依赖。
 2. 在 Zotero 的「工具 → 插件」中选择「从文件安装插件」，打开该 XPI。
 3. 启动 GrapePaper 网页（项目根目录 `npm run dev`），或使用自己信任的 HTTPS 部署。在 Zotero 设置中的 **GrapePaper** 页面保存完整网页地址，默认 `http://localhost:5173/`；若开发服务器换了端口，请同步修改这里。
 4. 打开有文本层的 PDF，选择一段文字，点击 **🍇 GrapePaper 伴读**。网页打开后，先查看／生成伴读，再按需点击阅读确认对号。
 
 ## 兼容性与限制
 
-- 面向 Zotero 7 和 8 的官方 `renderTextSelectionPopup` API 实现，包含启动／停用清理和可配置地址。清单允许 7.0–8.0.*；**尚未在真实 Zotero 桌面环境完成安装与交互验证**，当前为实验版桥接插件。
+- 使用官方 `renderTextSelectionPopup` API，包含启动／停用清理和可配置地址。清单允许 7.0–10.0.*；2026-10-02 已在 macOS 独立临时 profile/data 中完成真实 Zotero 10.0.4 桌面 smoke。7/8 仅保留原 API 合同与自动覆盖，未实际运行；各版本实际安装与交互均不由 fixture 测试代替。[完整兼容证据和最短 smoke checklist](COMPATIBILITY.md)
 - 插件支持 Zotero 自带的文字选择。任意形状圈选由网页版负责；扫描版 PDF 若无文本层，请先 OCR。
 - 网页新标签页接收选段，不自动同步 Zotero 数据库，也不读取、上传整个 PDF。全文参考文献解析仍需要在网页中自行打开对应 PDF；仅传选段时，参考线索需要结合原文核对。
 - 每段上限 4,000 个 JavaScript 字符单位；编码后的地址也有长度限制。超限会提示缩短选择，不会静默截断正文。
 - 每次点击会打开网页；如果同源的 GrapePaper 阅读页已打开，网页通过内存中的 `BroadcastChannel` 握手把选段交给一个已有页面，以延续该页的阅读会话。没有接收页、浏览器不支持或握手超时时，在新页面阅读。桌面内嵌侧栏尚未实现；插件不保存阅读计数，不创建已读批注。
-- 只允许 HTTPS 地址，或 `localhost`、`127.0.0.1`、`[::1]` 上的 HTTP。地址中不允许账号密码、查询参数或既有 fragment。无自动更新服务器；新版本重新构建安装。
+- 只允许 HTTPS 地址，或 `localhost`、`127.0.0.1`、`[::1]` 上的 HTTP。地址中不允许账号密码、查询参数或既有 fragment。Zotero 安装器要求 `update_url`，指向项目 Pages 的 `zotero-updates.json`；当前清单 `updates: []`，不提供自动升级。新版本仍需重新构建安装。该空清单请求不包含 PDF、选段或文献库资料。
 
 ## 传输合同
 
@@ -50,16 +50,17 @@ node zotero/build.mjs
 
 自动检查覆盖字段白名单、URL 限制、选段／页码、显式点击发送、关闭清理和构建内容。它们验证桥接合同，不能代替真实 Zotero 中的安装、偏好面板、键盘操作和 PDF 选择测试。
 
-维护时应在独立 Zotero 测试 profile 中完成：安装 → 保存本地地址 → PDF 选段 → 网页接收 → 停用后按钮消失 → 重新启用。随后再核对当前稳定版的兼容性上限。
+执行 `node zotero/prepare-smoke.mjs` 可准备独立临时 profile 和独立 data directory，并打印启动命令；脚本不启动 Zotero、不读取日常 profile、不导入资料。测试时不登录 Sync，使用公开或合成的文本层 PDF。完成：安装 → 保存/重读地址 → PDF 选段 → 网页接收与手动确认 → 停用后按钮消失 → 重新启用。
 
 ## 官方依据
 
 - [Zotero 7 developer guide: reader hooks, bootstrap and preferences](https://www.zotero.org/support/dev/zotero_7_for_developers)
 - [Zotero 8 developer guide: platform changes](https://www.zotero.org/support/dev/zotero_8_for_developers)
+- [Zotero 10 developer guide](https://www.zotero.org/support/dev/zotero_10_for_developers)
 - [Official reader event API and public itemID getter](https://github.com/zotero/zotero/blob/main/chrome/content/zotero/xpcom/reader.js)
 - [Selection popup source](https://github.com/zotero/reader/blob/master/src/common/components/view-popup/selection-popup.js)
 - [CustomSections source: append must be synchronous](https://github.com/zotero/reader/blob/master/src/common/components/common/custom-sections.js)
 - [PDF selection metadata source](https://github.com/zotero/reader/blob/master/src/pdf/pdf-view.js)
 - [MDN: URI fragments](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment)
 
-后续优先在真实 Zotero 环境验证，再考虑内嵌伴读侧栏。
+真实 smoke 只覆盖 10.0.4 的基础选段工作流和生命周期，不等于所有版本或完整无障碍验证；内嵌伴读侧栏仍未实现。
