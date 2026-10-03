@@ -40,6 +40,51 @@ function renderSlab(options?: { onDelete?: (id: string) => void }) {
 }
 
 describe('StoneSlab V2', () => {
+  it('restores external content without reporting a user edit', async () => {
+    const onUpdate = vi.fn<(content: string) => void>();
+    const slab = (content: string) => (
+      <UIProvider>
+        <StoneSlab
+          paragraph={{ ...paragraph, content }}
+          onUpdate={onUpdate}
+          onDelete={vi.fn()}
+          onAddAnnotation={vi.fn()}
+          isSelected={false}
+          onSelect={vi.fn()}
+        />
+      </UIProvider>
+    );
+    const { rerender } = render(slab('<p>Initial note</p>'));
+    const editor = await screen.findByRole('textbox', { name: 'Paragraph 1 editor' });
+    expect(editor).toHaveTextContent('Initial note');
+
+    rerender(slab('<p>Restored <strong>bold</strong> and <em>italic</em> note</p>'));
+    await waitFor(() => expect(editor).toHaveTextContent('Restored bold and italic note'));
+    expect(editor.querySelector('strong')).toHaveTextContent('bold');
+    expect(editor.querySelector('em')).toHaveTextContent('italic');
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('keeps the existing schema without newly enabled link or underline marks', async () => {
+    render(
+      <UIProvider>
+        <StoneSlab
+          paragraph={{ ...paragraph, content: '<p><u>Plain</u> <a href="https://example.org">reference</a></p>' }}
+          onUpdate={vi.fn()}
+          onDelete={vi.fn()}
+          onAddAnnotation={vi.fn()}
+          isSelected={false}
+          onSelect={vi.fn()}
+        />
+      </UIProvider>
+    );
+    const editor = await screen.findByRole('textbox', { name: 'Paragraph 1 editor' });
+    expect(editor).toHaveTextContent('Plain reference');
+    expect(editor.querySelector('a')).toBeNull();
+    expect(editor.querySelector('u')).toBeNull();
+    expect(editor.querySelectorAll('p')).toHaveLength(1);
+  });
+
   it('provides named editor and toolbar controls with explicit format state', async () => {
     renderSlab();
 
