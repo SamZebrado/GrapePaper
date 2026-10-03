@@ -42,7 +42,8 @@ export default function StoneSlab({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      // Preserve the v2 schema during the security update.
+      StarterKit.configure({ link: false, underline: false, trailingNode: false }),
       Placeholder.configure({
         placeholder: t('editor.beginWriting'),
       }),
@@ -71,7 +72,8 @@ export default function StoneSlab({
   // Sync external content changes
   useEffect(() => {
     if (editor && paragraph.content !== editor.getHTML()) {
-      editor.commands.setContent(paragraph.content);
+      // Restored content is not a user edit; v3 emits updates by default.
+      editor.commands.setContent(paragraph.content, { emitUpdate: false });
     }
   }, [paragraph.content, editor]);
 

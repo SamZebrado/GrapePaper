@@ -23,16 +23,18 @@
     "test:e2e:evidence": "node scripts/e2e-evidence.mjs"
   },
   "dependencies": {
-    "@tiptap/extension-placeholder": "^2.11.5",
-    "@tiptap/react": "^2.11.5",
-    "@tiptap/starter-kit": "^2.11.5",
+    "@tiptap/extension-placeholder": "3.30.4",
+    "@tiptap/react": "3.30.4",
+    "@tiptap/starter-kit": "3.30.4",
     "framer-motion": "^11.15.0",
     "i18next": "^26.0.5",
     "pdfjs-dist": "6.3.289",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^17.0.4",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "@tiptap/core": "3.30.4",
+    "@tiptap/pm": "3.30.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -50,10 +52,22 @@
     "playwright": "^1.59.1",
     "typescript": "~5.6.3",
     "typescript-eslint": "^8.18.2",
-    "vite": "^6.0.7",
-    "vitest": "^4.1.4"
+    "vite": "6.4.3",
+    "vitest": "4.1.11"
   },
   "engines": {
     "node": ">=22.13.0"
+  },
+  "overrides": {
+    "@babel/core": "7.29.6",
+    "@humanfs/node": "0.16.8",
+    "baseline-browser-mapping": "2.11.0",
+    "browserslist": "4.28.7",
+    "js-yaml": "4.3.2",
+    "nanoid": "3.3.18",
+    "postcss": "8.5.23",
+    "undici": "7.29.1",
+    "brace-expansion@1": "1.1.21",
+    "brace-expansion@5": "5.0.12"
   }
 }

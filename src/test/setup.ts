@@ -3,13 +3,15 @@ import { vi } from 'vitest';
 
 // Mock localStorage before importing i18n
 const localStorageMock = {
+  length: 0,
+  key: vi.fn(() => null),
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
-};
+} satisfies Storage;
 
-global.localStorage = localStorageMock as any;
+global.localStorage = localStorageMock;
 
 // Initialize i18n for tests
 import i18n from '../i18n';
@@ -148,3 +150,12 @@ i18n.init({
 
 // Mock scrollTo to avoid JSDOM warnings
 global.window.scrollTo = vi.fn();
+
+// JSDOM has no layout; ProseMirror v3 needs the browser's Range geometry API.
+// These zero-layout shims do not certify scrolling or geometry in a browser.
+if (!Range.prototype.getClientRects) {
+  Range.prototype.getClientRects = () => Object.assign([] as DOMRect[], { item: () => null });
+}
+if (!Range.prototype.getBoundingClientRect) {
+  Range.prototype.getBoundingClientRect = () => new DOMRect();
+}
