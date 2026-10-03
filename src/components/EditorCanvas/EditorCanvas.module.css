@@ -42,6 +42,15 @@
   }
 }
 
+@media (max-width: 600px) {
+  .canvas,
+  .canvas[data-chat-open='true'] {
+    margin-left: 0;
+    width: 100%;
+    padding: var(--gp-space-6) var(--gp-space-3) var(--gp-space-12);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .addBtn,
   .annotationCancelBtn,

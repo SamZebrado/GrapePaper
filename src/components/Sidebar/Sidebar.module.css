@@ -313,6 +313,14 @@
   .actionBtnSecondary { font-size: 12px; }
 }
 
+@media (max-width: 600px) {
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .paragraphItem,
   .docTitleInput,

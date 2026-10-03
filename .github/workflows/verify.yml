@@ -33,6 +33,8 @@ jobs:
           npm run preview:pages > /tmp/grapepaper-pages.log 2>&1 &
           GRAPEPAPER_TEST_URL=http://127.0.0.1:4173/GrapePaper/ npm run test:e2e
           GRAPEPAPER_TEST_URL=http://127.0.0.1:4173/GrapePaper/ npm run test:e2e:evidence
+      - name: Notes responsive editor regression
+        run: node scripts/e2e-notes-responsive.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: grapepaper-zotero-experimental
